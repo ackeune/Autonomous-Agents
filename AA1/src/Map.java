@@ -4,7 +4,7 @@ import java.util.List;
 
 
 public class Map {
-	boolean print = true;
+	boolean print = false;
 	
 	public static void main(String[] args)
 	{
