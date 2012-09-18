@@ -26,6 +26,11 @@ public class State {
 
 		State environment2 = new State();
 		printArray(environment2.agent.valueIteration(environment2));
+		
+		State environment3 = new State(new Point(10,10), new Point(0,0));
+		double[][] grid = environment3.agent.policyEvaluation(environment3); 
+		printArray(grid);
+		System.out.println(grid[10][10]);
 
 	}  
 
