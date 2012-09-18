@@ -1,6 +1,5 @@
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 
 public class State {
@@ -26,7 +25,7 @@ public class State {
 		System.out.printf("mean: %f\nstandard deviation: %f\n", mean, dev);
 
 		State environment2 = new State();
-		printArray(environment2.agents.get(0).stateValueFunction(environment2));
+		printArray(environment2.agent.valueIteration(environment2));
 
 	}  
 
@@ -39,22 +38,62 @@ public class State {
 		}
 		return Math.sqrt(dev / timeList.length);
 	}
+	
+	public static double[][] copyArray(double[][] a)
+	{
+		double[][] clone = new double[a.length][a[0].length];
+		for(int i=0; i<a.length; i++)
+		{
+			for(int j=0; j<a[i].length; j++)
+			{
+				clone[i][j] = a[i][j];
+			}
+		}
+		return clone;
+	}
+	
+	public double transitionFunction(String agentAction, String preyAction)
+	{
+		State newState = new State(this);
+		newState.agent.moveAccordingToAction(agentAction);
+		Point nextPreyPoint = State.nextTo(newState.prey.pos, preyAction);
+		Map<Point, Double> validMovesHash= prey.getValidMoves(this);
+		if( validMovesHash.containsKey(nextPreyPoint) )
+			return validMovesHash.get(nextPreyPoint);
+		return 0;
+	}
+	
+	public double rewardFunction(String agentAction, String preyAction)
+	{
+		if( this.agent.pos.equals(this.prey.pos) )	// no return if the prey is already caught
+			return 0;
+		Point nextPredatorPoint = State.nextTo(this.agent.pos, agentAction);
+		Point nextPreyPoint = State.nextTo(this.prey.pos, preyAction);
+		if( nextPredatorPoint.equals(nextPreyPoint) )
+			return 10;	// reward for catching the prey
+		return 0;	
+	}
 
-	List<Predator> agents;
+	Predator agent;
 	Prey prey;
 
 
 	public State()
 	{
-		agents = new ArrayList<Predator>();
-		agents.add(new Predator(new Point(0,0)));
+		this.agent = new Predator(new Point(0,0));
 		prey = new Prey(new Point(5,5));
 	}
 
 	public State(State environment)
 	{
-		this.agents = new ArrayList<Predator>(environment.agents);
+		this.agent = new Predator(environment.agent);
 		this.prey = new Prey(environment.prey); 
+	}
+	
+	public State(Point agentPos, Point preyPos)
+	{
+		this.agent = new Predator(agentPos);
+		this.prey = new Prey(preyPos);
 	}
 
 	public int run()
@@ -65,10 +104,7 @@ public class State {
 			//move prey
 			prey.doAction(this);
 			//move predator
-			for( int i = 0;i < agents.size() ;i++ )
-			{
-				agents.get(i).doAction(this);
-			}
+			agent.doAction(this);
 			time++;
 			if(print == true)
 				System.out.print(toString());
@@ -77,12 +113,7 @@ public class State {
 	}
 
 	public boolean preyCaught(){
-		for(int i = 0; i < agents.size(); i++){
-			//if an agent has found the predator, the game is over
-			if(agents.get(i).pos.equals(prey.pos))
-				return true;
-		}
-		return false;
+		return agent.pos.equals(prey.pos);
 	}
 
 	public static Point nextTo(Point pos, String action)
@@ -116,9 +147,7 @@ public class State {
 	{
 		String s = "";
 		s += prey.toString() + "\n";
-		for(int i = 0; i<agents.size(); i++){
-			s += agents.get(i).toString() + "\n";
-		}
+		s += agent.toString() + "\n";
 		return s;
 	}
 

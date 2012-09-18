@@ -1,7 +1,6 @@
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -64,10 +63,9 @@ public class Prey {
 		validMoves.add(State.nextTo(pos, "S"));
 		validMoves.add(State.nextTo(pos, "W"));
 		
-		for(int i = 0; i < environment.agents.size(); i++){
-			if(validMoves.contains(environment.agents.get(i).pos))
-				validMoves.remove(environment.agents.get(i).pos);
-		}
+		if( validMoves.contains(environment.agent.pos) )	// not allowed to move to the position of the predator
+			validMoves.remove(environment.agent.pos);
+		
 		Map<Point, Double> hashedMoves = new HashMap<Point, Double>();
 		hashedMoves.put(environment.prey.pos, 0.8);
 		for(int i=0; i<validMoves.size(); i++)
@@ -76,6 +74,11 @@ public class Prey {
 		}
 			
 		return hashedMoves;
+	}
+	
+	public void moveAccordingToAction(String action)
+	{
+		this.pos = State.nextTo(pos, action);
 	}
 	
 	
