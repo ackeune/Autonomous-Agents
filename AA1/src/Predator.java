@@ -27,10 +27,10 @@ public class Predator {
 
 		//find the positions around the prey
 		List<Point> validMoves = new ArrayList<Point>();
-		validMoves.add(State.nextTo(pos, "N"));
-		validMoves.add(State.nextTo(pos, "E"));
-		validMoves.add(State.nextTo(pos, "S"));
-		validMoves.add(State.nextTo(pos, "W"));
+		validMoves.add(environment.nextTo(pos, "N"));
+		validMoves.add(environment.nextTo(pos, "E"));
+		validMoves.add(environment.nextTo(pos, "S"));
+		validMoves.add(environment.nextTo(pos, "W"));
 		validMoves.add(pos);
 		//move to a random position
 		this.pos = validMoves.get(generator.nextInt(validMoves.size()));
@@ -80,16 +80,14 @@ public class Predator {
 		return sum;
 	}
 
-	public void moveAccordingToAction(String action)
+	public void moveAccordingToAction(String action, State environment)
 	{
-		this.pos = State.nextTo(pos, action);
+		this.pos = environment.nextTo(pos, action);
 	}
 
-	public double[][] policyEvaluation(State environment)
+	public double[][] policyEvaluation(State environment, double theta, double gamma)
 	{
 		double delta;
-		double theta = 0.0;
-		double gamma = 0.8;
 		double[][] grid = new double[11][11];	// initial grid filled with zeros
 		String[] actionList = {"N", "E", "S", "W", "WAIT"};
 
@@ -108,15 +106,13 @@ public class Predator {
 					
 					for(int agentAction=0; agentAction<actionList.length; agentAction++)	//loop through all actions of the agent
 					{						
-						State hypotheticalEnvironment = new State(new Point(i,j), environment.prey.pos);
+						State hypotheticalEnvironment = new State(new Point(i,j), environment.prey.pos, environment.stateSize);
 						Map<Point, Double> validAgentMoves = getValidMoves(hypotheticalEnvironment);
 						
 						double tempValue = 0;
 						for(int preyAction=0; preyAction<actionList.length; preyAction++)	// loop through all s'
 						{
-							if( i==2 && j==5 && agentAction==1 && preyAction==4)
-								System.out.print("");
-							Point nextAgentPos = State.nextTo(hypotheticalEnvironment.agent.pos, actionList[agentAction]);
+							Point nextAgentPos = hypotheticalEnvironment.nextTo(hypotheticalEnvironment.agent.pos, actionList[agentAction]);
 							// calculate sum_{s'} [transFunc * (RewardFunc + gamma * V(s'))]
 							tempValue += hypotheticalEnvironment.transitionFunction(actionList[agentAction], actionList[preyAction]) * 
 								(hypotheticalEnvironment.rewardFunction(actionList[agentAction], actionList[preyAction]) + 
@@ -124,7 +120,7 @@ public class Predator {
 						}
 						
 						// sum over the probabilities of performing action a in state s
-						stateValue += tempValue * validAgentMoves.get(State.nextTo(hypotheticalEnvironment.agent.pos, actionList[agentAction]));
+						stateValue += tempValue * validAgentMoves.get(hypotheticalEnvironment.nextTo(hypotheticalEnvironment.agent.pos, actionList[agentAction]));
 					}
 					grid[i][j] = stateValue;
 										
@@ -138,11 +134,9 @@ public class Predator {
 		return grid;
 	}
 
-	public double[][] valueIteration(State environment)
+	public double[][] valueIteration(State environment, double theta, double gamma)
 	{
 		double delta;
-		double theta = 0.1;
-		double gamma = 0.8;
 		double[][] grid = new double[11][11];	// initial grid filled with zeros
 		String[] actionList = {"N", "E", "S", "W", "WAIT"};
 
@@ -160,14 +154,14 @@ public class Predator {
 					
 					for(int agentAction=0; agentAction<actionList.length; agentAction++)	//loop through all actions of the agent
 					{
-						State hypotheticalEnvironment = new State(new Point(i,j), environment.prey.pos);
+						State hypotheticalEnvironment = new State(new Point(i,j), environment.prey.pos, environment.stateSize);
 						
 						double tempValue = 0;
 						for(int preyAction=0; preyAction<actionList.length; preyAction++)	// loop through all s'
 						{
 							if( i==2 && j==5 && agentAction==1 && preyAction==4)
 								System.out.print("");
-							Point nextAgentPos = State.nextTo(hypotheticalEnvironment.agent.pos, actionList[agentAction]);
+							Point nextAgentPos = hypotheticalEnvironment.nextTo(hypotheticalEnvironment.agent.pos, actionList[agentAction]);
 							// calculate sum_{s'} [transFunc * (RewardFunc + gamma * V(s'))]
 							tempValue += hypotheticalEnvironment.transitionFunction(actionList[agentAction], actionList[preyAction]) * 
 								(hypotheticalEnvironment.rewardFunction(actionList[agentAction], actionList[preyAction]) + 
@@ -189,15 +183,76 @@ public class Predator {
 		return grid;
 	}
 	
+	public Policy[][] policy(State environment, double[][] grid)
+	{
+		 Policy[][] policies = new Policy[grid.length][grid[0].length];
+		for(int i=0; i<grid.length; i++)	// loop through the grid
+		{
+			for(int j=0; j<grid[i].length; j++)
+			{
+				policies[i][j] = getStatePolicy(environment, new Point(i,j), grid);
+			}
+		}
+		
+		return policies;
+	}
+	
+	public Policy getStatePolicy(State environment, Point pos, double[][] grid)
+	{
+		List<Point> neighbours = getNeighbours(environment, pos);
+		
+		boolean[] usedActions = new boolean[neighbours.size()];
+		int usedActionCounter = 0;
+		double bestValue = 0;
+		List<Point> bestActions = new ArrayList<Point>();
+		for(int i=0; i<neighbours.size(); i++)
+		{
+			double tempValue = grid[neighbours.get(i).x][neighbours.get(i).y];
+			if (tempValue == bestValue )
+			{
+				bestActions.add(neighbours.get(i));
+				usedActions[i]=true;
+				usedActionCounter++;
+			}
+			else if (tempValue > bestValue )
+			{
+				usedActionCounter = 1;
+				usedActions = new boolean[neighbours.size()];
+				usedActions[i]=true;
+				bestValue = tempValue;
+				bestActions = new ArrayList<Point>();
+				bestActions.add(neighbours.get(i));
+			}
+		}
+		
+		double[] policyProbs = new double[neighbours.size()];
+		double actionProb = 1.0/usedActionCounter;
+		for(int i=0; i<policyProbs.length; i++)
+		{
+			if( usedActions[i] )
+				policyProbs[i] = actionProb;
+		}
+		
+		return new Policy(policyProbs); 
+	}
+	
+	
+	public List<Point> getNeighbours(State environment, Point pos)
+	{
+		List<Point> neighbours = new ArrayList<Point>();
+		neighbours.add(environment.nextTo(pos, "N"));
+		neighbours.add(environment.nextTo(pos, "E"));
+		neighbours.add(environment.nextTo(pos, "S"));
+		neighbours.add(environment.nextTo(pos, "W"));
+		neighbours.add(environment.nextTo(pos, "WAIT"));
+		
+		return neighbours;
+	}
+	
 	public Map<Point, Double> getValidMoves(State environment)
 	{
 		List<Point> validMoves = new ArrayList<Point>();
-		validMoves.add(State.nextTo(environment.agent.pos, "N"));
-		validMoves.add(State.nextTo(environment.agent.pos, "E"));
-		validMoves.add(State.nextTo(environment.agent.pos, "S"));
-		validMoves.add(State.nextTo(environment.agent.pos, "W"));
-		validMoves.add(State.nextTo(environment.agent.pos, "WAIT"));
-		
+		validMoves = getNeighbours(environment, environment.agent.pos);
 		Map<Point, Double> hashedMoves = new HashMap<Point, Double>();
 		for(int i=0; i<validMoves.size(); i++)
 		{

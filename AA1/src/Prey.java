@@ -58,10 +58,10 @@ public class Prey {
 		//find the positions around the prey
 		List<Point> validMoves = new ArrayList<Point>();
 		//List<String> validActions = new ArrayList<String>();
-		validMoves.add(State.nextTo(pos, "N"));
-		validMoves.add(State.nextTo(pos, "E"));
-		validMoves.add(State.nextTo(pos, "S"));
-		validMoves.add(State.nextTo(pos, "W"));
+		validMoves.add(environment.nextTo(pos, "N"));
+		validMoves.add(environment.nextTo(pos, "E"));
+		validMoves.add(environment.nextTo(pos, "S"));
+		validMoves.add(environment.nextTo(pos, "W"));
 		
 		if( validMoves.contains(environment.agent.pos) )	// not allowed to move to the position of the predator
 			validMoves.remove(environment.agent.pos);
@@ -76,9 +76,9 @@ public class Prey {
 		return hashedMoves;
 	}
 	
-	public void moveAccordingToAction(String action)
+	public void moveAccordingToAction(String action, State environment)
 	{
-		this.pos = State.nextTo(pos, action);
+		this.pos = environment.nextTo(pos, action);
 	}
 	
 	

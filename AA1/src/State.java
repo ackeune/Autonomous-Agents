@@ -24,11 +24,15 @@ public class State {
 		double dev = standardDeviation(timeList, mean);
 		System.out.printf("mean: %f\nstandard deviation: %f\n", mean, dev);
 
-		State environment2 = new State();
-		printArray(environment2.agent.valueIteration(environment2));
 		
-		State environment3 = new State(new Point(10,10), new Point(0,0));
-		double[][] grid = environment3.agent.policyEvaluation(environment3); 
+		Point stateSize = new Point(11,11);
+		State environment2 = new State();
+		double theta = 0;
+		double gamma = 0.8;
+		printArray(environment2.agent.valueIteration(environment2, theta, gamma));
+		
+		State environment3 = new State(new Point(10,10), new Point(0,0), stateSize);
+		double[][] grid = environment3.agent.policyEvaluation(environment3, theta, gamma); 
 		printArray(grid);
 		System.out.println(grid[10][10]);
 
@@ -56,49 +60,31 @@ public class State {
 		}
 		return clone;
 	}
-	
-	public double transitionFunction(String agentAction, String preyAction)
-	{
-		State newState = new State(this);
-		newState.agent.moveAccordingToAction(agentAction);
-		Point nextPreyPoint = State.nextTo(newState.prey.pos, preyAction);
-		Map<Point, Double> validMovesHash= prey.getValidMoves(this);
-		if( validMovesHash.containsKey(nextPreyPoint) )
-			return validMovesHash.get(nextPreyPoint);
-		return 0;
-	}
-	
-	public double rewardFunction(String agentAction, String preyAction)
-	{
-		if( this.agent.pos.equals(this.prey.pos) )	// no return if the prey is already caught
-			return 0;
-		Point nextPredatorPoint = State.nextTo(this.agent.pos, agentAction);
-		Point nextPreyPoint = State.nextTo(this.prey.pos, preyAction);
-		if( nextPredatorPoint.equals(nextPreyPoint) )
-			return 10;	// reward for catching the prey
-		return 0;	
-	}
 
 	Predator agent;
 	Prey prey;
+	Point stateSize;
 
 
 	public State()
 	{
 		this.agent = new Predator(new Point(0,0));
-		prey = new Prey(new Point(5,5));
+		this.prey = new Prey(new Point(5,5));
+		this.stateSize = new Point(11,11);
 	}
 
 	public State(State environment)
 	{
 		this.agent = new Predator(environment.agent);
 		this.prey = new Prey(environment.prey); 
+		this.stateSize = new Point(environment.stateSize);
 	}
 	
-	public State(Point agentPos, Point preyPos)
+	public State(Point agentPos, Point preyPos, Point stateSize)
 	{
 		this.agent = new Predator(agentPos);
 		this.prey = new Prey(preyPos);
+		this.stateSize = stateSize;
 	}
 
 	public int run()
@@ -116,38 +102,62 @@ public class State {
 		}
 		return time;
 	}
+	
+	public double transitionFunction(String agentAction, String preyAction)
+	{
+		if( this.agent.pos.equals(this.prey.pos) )	// no return if the prey is already caught
+			return 0;
+		State newState = new State(this);
+		newState.agent.moveAccordingToAction(agentAction, newState);
+		Point nextPreyPoint = nextTo(newState.prey.pos, preyAction);
+		Map<Point, Double> validMovesHash= prey.getValidMoves(this);
+		if( validMovesHash.containsKey(nextPreyPoint) )
+			return validMovesHash.get(nextPreyPoint);
+		return 0;
+	}
+	
+	public double rewardFunction(String agentAction, String preyAction)
+	{
+		if( this.agent.pos.equals(this.prey.pos) )	// no return if the prey is already caught
+			return 0;
+		Point nextPredatorPoint = nextTo(this.agent.pos, agentAction);
+		Point nextPreyPoint = nextTo(this.prey.pos, preyAction);
+		if( nextPredatorPoint.equals(nextPreyPoint) )
+			return 10;	// reward for catching the prey
+		return 0;	
+	}
 
 	public boolean preyCaught(){
 		return agent.pos.equals(prey.pos);
 	}
 
-	public static Point nextTo(Point pos, String action)
+	public Point nextTo(Point pos, String action)
 	{
 		Point newP = new Point(pos);
 		if( action.equals("N") )
 		{
 			newP.y--;
 			if(newP.y<0)
-				newP.y=10;
+				newP.y = stateSize.y-1;
 		}else if( action.equals("E") )
 		{
 			newP.x++;
-			if(newP.x>10)
+			if(newP.x>stateSize.x-1)
 				newP.x=0;
 		}else if( action.equals("S") )
 		{
 			newP.y++;
-			if(newP.y>10)
+			if(newP.y>stateSize.y-1)
 				newP.y=0;
 		}else if( action.equals("W") )
 		{
 			newP.x--;
 			if(newP.x<0)
-				newP.x=10;
+				newP.x=stateSize.x-1;
 		}
 		return newP;
 	}
-
+	
 	public String toString()
 	{
 		String s = "";
@@ -162,7 +172,7 @@ public class State {
 		{
 			for (int j = 0; j < grid[i].length; j++) 
 			{
-				System.out.printf("%.2f ", grid[i][j]);
+				System.out.printf("%.2f\t ", grid[i][j]);
 			}
 			System.out.println("");
 		}
