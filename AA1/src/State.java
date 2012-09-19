@@ -59,6 +59,9 @@ public class State {
 	
 	public double transitionFunction(String agentAction, String preyAction)
 	{
+		if( this.agent.pos.equals(this.prey.pos) )	// no return if the prey is already caught
+			return 0;
+		
 		State newState = new State(this);
 		newState.agent.moveAccordingToAction(agentAction);
 		Point nextPreyPoint = State.nextTo(newState.prey.pos, preyAction);
