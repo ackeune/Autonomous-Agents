@@ -9,15 +9,18 @@ import java.util.Random;
 public class Predator {
 
 	Point pos;
+	Policy policy;
 
-	public Predator(Point pos)
+	public Predator(Point pos, Point stateSize)
 	{
 		this.pos = pos;
+		this.policy = new Policy(stateSize);
 	}
 	
 	public Predator(Predator p)
 	{
 		this.pos = new Point(p.pos);
+		this.policy = new Policy(p.policy);
 	}
 
 	public void doAction(State environment)
@@ -183,21 +186,41 @@ public class Predator {
 		return grid;
 	}
 	
-	public Policy[][] policy(State environment, double[][] grid)
+	public Policy policyIteration(State environment, double theta, double gamma)
 	{
-		 Policy[][] policies = new Policy[grid.length][grid[0].length];
+		//Policy policy = new Policy(environment.stateSize);
+		Policy oldPolicy;
+		do
+		{
+			oldPolicy = new Policy(policy);	//clone the policy
+			// evaluate policy
+			double grid[][] = policyEvaluation(environment, theta, gamma);
+			State.printArray(grid);
+			// improve policy
+			policy = makePolicy(environment, grid);
+			System.out.println(policy);
+		}while( !oldPolicy.equals(policy) );
+		return policy;
+	}
+	
+	public static Policy makePolicy(State environment, double[][] grid)
+	{
+		grid[environment.prey.pos.x][environment.prey.pos.y] = 1000;
+		Policy policy = new Policy(environment.stateSize);
 		for(int i=0; i<grid.length; i++)	// loop through the grid
 		{
 			for(int j=0; j<grid[i].length; j++)
 			{
-				policies[i][j] = getStatePolicy(environment, new Point(i,j), grid);
+				if(i==0 && j==5)
+					System.out.println();
+				//set probability of performing the actions for this state
+				policy.setStatePolicy(new Point(i,j), getStatePolicy(environment, new Point(i,j), grid));	
 			}
-		}
-		
-		return policies;
+		}		
+		return policy;
 	}
 	
-	public Policy getStatePolicy(State environment, Point pos, double[][] grid)
+	public static StatePolicy getStatePolicy(State environment, Point pos, double[][] grid)
 	{
 		List<Point> neighbours = getNeighbours(environment, pos);
 		
@@ -233,11 +256,11 @@ public class Predator {
 				policyProbs[i] = actionProb;
 		}
 		
-		return new Policy(policyProbs); 
+		return new StatePolicy(policyProbs); 
 	}
 	
 	
-	public List<Point> getNeighbours(State environment, Point pos)
+	public static List<Point> getNeighbours(State environment, Point pos)
 	{
 		List<Point> neighbours = new ArrayList<Point>();
 		neighbours.add(environment.nextTo(pos, "N"));
@@ -251,18 +274,19 @@ public class Predator {
 	
 	public Map<Point, Double> getValidMoves(State environment)
 	{
-		List<Point> validMoves = new ArrayList<Point>();
-		validMoves = getNeighbours(environment, environment.agent.pos);
 		Map<Point, Double> hashedMoves = new HashMap<Point, Double>();
-		for(int i=0; i<validMoves.size(); i++)
-		{
-			hashedMoves.put(validMoves.get(i), 1.0/validMoves.size());
-		}	
+		StatePolicy statePolicy = policy.getStatePolicy(environment.agent.pos);
+		hashedMoves.put(environment.nextTo(environment.agent.pos, "N"), statePolicy.N);
+		hashedMoves.put(environment.nextTo(environment.agent.pos, "E"), statePolicy.E);
+		hashedMoves.put(environment.nextTo(environment.agent.pos, "S"), statePolicy.S);
+		hashedMoves.put(environment.nextTo(environment.agent.pos, "W"), statePolicy.W);
+		hashedMoves.put(environment.nextTo(environment.agent.pos, "WAIT"), statePolicy.WAIT);
+		
 		return hashedMoves;
 	}
 
 
-
+	@Override
 	public String toString()
 	{
 		return String.format("Predator(%d,%d)", pos.x, pos.y);

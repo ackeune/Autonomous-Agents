@@ -81,7 +81,7 @@ public class Prey {
 		this.pos = environment.nextTo(pos, action);
 	}
 	
-	
+	@Override
 	public String toString()
 	{
 		return String.format("Prey(%d,%d)", pos.x, pos.y);

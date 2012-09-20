@@ -7,8 +7,7 @@ public class State {
 
 	public static void main(String[] args)
 	{
-
-
+		System.out.println("Ex1");
 		int simulations = 100;
 		double mean =0;
 		double[] timeList = new double[simulations];
@@ -24,17 +23,25 @@ public class State {
 		double dev = standardDeviation(timeList, mean);
 		System.out.printf("mean: %f\nstandard deviation: %f\n", mean, dev);
 
-		
+		System.out.println("\nEx4");
 		Point stateSize = new Point(11,11);
-		State environment2 = new State();
+		State environment4 = new State();
 		double theta = 0;
 		double gamma = 0.8;
-		printArray(environment2.agent.valueIteration(environment2, theta, gamma));
+		double[][] grid = environment4.agent.valueIteration(environment4, theta, gamma); 
+		printArray(grid);
+		System.out.println(Predator.makePolicy(environment4, grid));
 		
-		State environment3 = new State(new Point(10,10), new Point(0,0), stateSize);
-		double[][] grid = environment3.agent.policyEvaluation(environment3, theta, gamma); 
+		System.out.println("\nEx2");
+		State environment2 = new State(new Point(10,10), new Point(0,0), stateSize);
+		grid = environment2.agent.policyEvaluation(environment2, theta, gamma); 
 		printArray(grid);
 		System.out.println(grid[10][10]);
+		
+		System.out.println("\nEx5");
+		State environment5 = new State(new Point(0,0), new Point(5,5), stateSize);
+		Policy policy = environment5.agent.policyIteration(environment5, theta, gamma);
+		//System.out.println(policy);
 
 	}  
 
@@ -68,7 +75,7 @@ public class State {
 
 	public State()
 	{
-		this.agent = new Predator(new Point(0,0));
+		this.agent = new Predator(new Point(0,0), new Point(11,11));
 		this.prey = new Prey(new Point(5,5));
 		this.stateSize = new Point(11,11);
 	}
@@ -82,7 +89,7 @@ public class State {
 	
 	public State(Point agentPos, Point preyPos, Point stateSize)
 	{
-		this.agent = new Predator(agentPos);
+		this.agent = new Predator(agentPos, stateSize);
 		this.prey = new Prey(preyPos);
 		this.stateSize = stateSize;
 	}
@@ -136,28 +143,29 @@ public class State {
 		Point newP = new Point(pos);
 		if( action.equals("N") )
 		{
-			newP.y--;
-			if(newP.y<0)
-				newP.y = stateSize.y-1;
+			newP.x--;
+			if(newP.x<0)
+				newP.x = stateSize.x-1;
 		}else if( action.equals("E") )
-		{
-			newP.x++;
-			if(newP.x>stateSize.x-1)
-				newP.x=0;
-		}else if( action.equals("S") )
 		{
 			newP.y++;
 			if(newP.y>stateSize.y-1)
 				newP.y=0;
+		}else if( action.equals("S") )
+		{
+			newP.x++;
+			if(newP.x>stateSize.x-1)
+				newP.x=0;
 		}else if( action.equals("W") )
 		{
-			newP.x--;
-			if(newP.x<0)
-				newP.x=stateSize.x-1;
+			newP.y--;
+			if(newP.y<0)
+				newP.y=stateSize.y-1;
 		}
 		return newP;
 	}
 	
+	@Override
 	public String toString()
 	{
 		String s = "";
@@ -176,7 +184,6 @@ public class State {
 			}
 			System.out.println("");
 		}
-		
 	}
 
 }
