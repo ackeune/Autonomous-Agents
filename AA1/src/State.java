@@ -7,9 +7,9 @@ public class State {
 
 	public static void main(String[] args)
 	{
-		System.out.println("Ex1");
+		System.out.println("Ex1 - Simulator");
 		int simulations = 100;
-		double mean =0;
+		double mean =0.0;
 		double[] timeList = new double[simulations];
 		for(int i=0; i<simulations; i++)
 		{
@@ -17,32 +17,45 @@ public class State {
 			int time = environment.run();
 			timeList[i] = time;
 			mean += time;
-
 		}
 		mean /=simulations;
 		double dev = standardDeviation(timeList, mean);
 		System.out.printf("mean: %f\nstandard deviation: %f\n", mean, dev);
-
-		System.out.println("\nEx4");
-		Point stateSize = new Point(11,11);
-		State environment4 = new State();
+		
+		System.out.println("\nEx2 - Policy Evaluation");
 		double theta = 0;
 		double gamma = 0.8;
-		double[][] grid = environment4.agent.valueIteration(environment4, theta, gamma); 
-		printArray(grid);
-		System.out.println(Predator.makePolicy(environment4, grid));
+		Point stateSize = new Point(11,11);
+		Point[] stateValues = {new Point(0,0), new Point(5,5), new Point(2,3), 
+				new Point(5,4), new Point(2,10), new Point(10,0), new Point(10,10), new Point(0,0)};
+		for(int i=0; i<stateValues.length; i+=2)
+		{
+			State environment2 = new State(stateValues[i], stateValues[i+1], stateSize);
+			double[][] grid = environment2.agent.policyEvaluation(environment2, theta, gamma);
+			//printArray(grid);
+			System.out.printf("%s, %s, StateValue: %f\n", environment2.agent, environment2.prey, grid[stateValues[i].x][stateValues[i].y]);
+		}
 		
-		System.out.println("\nEx2");
-		State environment2 = new State(new Point(10,10), new Point(0,0), stateSize);
-		grid = environment2.agent.policyEvaluation(environment2, theta, gamma); 
-		printArray(grid);
-		System.out.println(grid[10][10]);
-		
-		System.out.println("\nEx5");
+		System.out.println("\nEx4 - Value Iteration");		
+		State environment4 = new State();
+		double[] discountFactors = {0.1, 0.5, 0.7, 0.9};
+		for(int i=0; i<discountFactors.length; i++)
+		{
+			double[][] grid = environment4.agent.valueIteration(environment4, theta, discountFactors[i]);
+			printArray(grid);
+			//System.out.println(Predator.makePolicy(environment4, grid));
+		}
+		 
+		System.out.println("\nEx5 - Policy Iteration");
 		State environment5 = new State(new Point(0,0), new Point(5,5), stateSize);
-		Policy policy = environment5.agent.policyIteration(environment5, theta, gamma);
-		//System.out.println(policy);
-
+		for(int i=0; i<discountFactors.length; i++)
+		{
+			double[][] grid = environment5.agent.policyIteration(environment5, theta, discountFactors[i]);
+			printArray(grid);
+			Policy policy = Predator.makePolicy(environment5, grid);
+			System.out.println(policy);
+		}
+		
 	}  
 
 	public static double standardDeviation(double[] timeList, double mean)

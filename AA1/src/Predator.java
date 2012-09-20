@@ -133,7 +133,7 @@ public class Predator {
 			//State.printArray(grid);
 			//System.out.println(delta);
 		}while( delta > theta );
-		System.out.printf("counter:%d\n", counter);
+		System.out.printf("Policy evaluation iterations:%d\tGamma:%f\n", counter, gamma);
 		return grid;
 	}
 
@@ -182,41 +182,44 @@ public class Predator {
 			//State.printArray(grid);
 			//System.out.println(delta);
 		}while( delta > theta );
-		System.out.printf("counter:%d\n", counter);
+		System.out.printf("Value iterations:%d\tGamma:%f\n", counter, gamma);
 		return grid;
 	}
 	
-	public Policy policyIteration(State environment, double theta, double gamma)
+	public double[][] policyIteration(State environment, double theta, double gamma)
 	{
-		//Policy policy = new Policy(environment.stateSize);
+		int counter = 0;
 		Policy oldPolicy;
+		double grid[][];
 		do
 		{
+			counter++;
 			oldPolicy = new Policy(policy);	//clone the policy
 			// evaluate policy
-			double grid[][] = policyEvaluation(environment, theta, gamma);
-			State.printArray(grid);
+			grid = policyEvaluation(environment, theta, gamma);
+			//State.printArray(grid);
 			// improve policy
 			policy = makePolicy(environment, grid);
-			System.out.println(policy);
+			//System.out.println(policy);
 		}while( !oldPolicy.equals(policy) );
-		return policy;
+		System.out.printf("Policy iterations:%d\tGamma:%f\n", counter, gamma);
+		return grid;
 	}
 	
 	public static Policy makePolicy(State environment, double[][] grid)
 	{
+		double oldPreyValue = grid[environment.prey.pos.x][environment.prey.pos.y];
 		grid[environment.prey.pos.x][environment.prey.pos.y] = 1000;
 		Policy policy = new Policy(environment.stateSize);
 		for(int i=0; i<grid.length; i++)	// loop through the grid
 		{
 			for(int j=0; j<grid[i].length; j++)
 			{
-				if(i==0 && j==5)
-					System.out.println();
 				//set probability of performing the actions for this state
 				policy.setStatePolicy(new Point(i,j), getStatePolicy(environment, new Point(i,j), grid));	
 			}
 		}		
+		grid[environment.prey.pos.x][environment.prey.pos.y] = oldPreyValue;
 		return policy;
 	}
 	
