@@ -1,3 +1,11 @@
+/*
+ * By:
+ * Michael Cabot (6047262), Anna Keune (6056547), 
+ * Sander Nugteren (6042023) and Richard Rozeboom (6173292)
+ * 
+ * Predator has a position and policy.
+ */
+
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,23 +19,26 @@ public class Predator {
 	Point pos;
 	Policy policy;
 
+	// constructors
 	public Predator(Point pos, Point stateSize)
 	{
 		this.pos = pos;
 		this.policy = new Policy(stateSize);
 	}
-	
 	public Predator(Predator p)
 	{
 		this.pos = new Point(p.pos);
 		this.policy = new Policy(p.policy);
-	}
+	}//end constructors
 
+	/**
+	 * Move the predator randomly.
+	 * @param environment
+	 */
 	public void doAction(State environment)
 	{
 
 		Random generator = new Random();
-
 		//find the positions around the prey
 		List<Point> validMoves = new ArrayList<Point>();
 		validMoves.add(environment.nextTo(pos, "N"));
@@ -39,14 +50,26 @@ public class Predator {
 		this.pos = validMoves.get(generator.nextInt(validMoves.size()));
 	}
 
-	public double[][] times(double[][] a, double factor)
+	/**
+	 * Multiplies a double array by a factor.
+	 * @param a
+	 * @param factor
+	 * @return double array
+	 */
+	public static double[][] times(double[][] a, double factor)
 	{
 		for(int i=0; i<a.length; i++)
 			for(int j=0; j<a[i].length; j++)
 				a[i][j]*=factor;
 		return a;
 	}
-	public double[][] add(double[][] a, double[][] b)
+	/**
+	 * Sums two double arrays.
+	 * @param a
+	 * @param b
+	 * @return double array
+	 */
+	public static double[][] add(double[][] a, double[][] b)
 	{
 		for(int i=0; i<a.length; i++)
 			for(int j=0; j<a[i].length; j++)
@@ -55,7 +78,13 @@ public class Predator {
 			}
 		return a;
 	}
-	public double[][] minus(double[][] a, double[][] b)
+	/**
+	 * Subtracts two double arrays.
+	 * @param a
+	 * @param b
+	 * @return double array.
+	 */
+	public static double[][] minus(double[][] a, double[][] b)
 	{
 		for(int i=0; i<a.length; i++)
 			for(int j=0; j<a[i].length; j++)
@@ -64,7 +93,12 @@ public class Predator {
 			}
 		return a;
 	}
-	public double[][] abs(double[][] a)
+	/**
+	 * Sets all the values of a double array to their absolute values.
+	 * @param a
+	 * @return double array.
+	 */
+	public static double[][] abs(double[][] a)
 	{
 		for(int i=0; i<a.length; i++)
 			for(int j=0; j<a[i].length; j++)
@@ -74,7 +108,12 @@ public class Predator {
 			}
 		return a;
 	}
-	public double sum(double[][] a)
+	/**
+	 * Sums the values in a double array.
+	 * @param a
+	 * @return sum of values.
+	 */
+	public static double sum(double[][] a)
 	{
 		double sum = 0;
 		for(int i=0; i<a.length; i++)
@@ -82,12 +121,23 @@ public class Predator {
 				sum += a[i][j];
 		return sum;
 	}
-
+	/**
+	 * Change to pos according to the action.
+	 * @param action
+	 * @param environment
+	 */
 	public void moveAccordingToAction(String action, State environment)
 	{
 		this.pos = environment.nextTo(pos, action);
 	}
 
+	/**
+	 * Evaluate the policy of the predator.
+	 * @param environment
+	 * @param theta		Evaluate until the difference is smaller than theta.
+	 * @param gamma		discount factor
+	 * @return	the state-values
+	 */
 	public double[][] policyEvaluation(State environment, double theta, double gamma)
 	{
 		double delta;
@@ -104,8 +154,7 @@ public class Predator {
 			{
 				for(int j = 0 ;  j <grid[0].length ; j++)
 				{		
-					double stateValue = 0;	
-					
+					double stateValue = 0;		
 					
 					for(int agentAction=0; agentAction<actionList.length; agentAction++)	//loop through all actions of the agent
 					{						
@@ -125,8 +174,7 @@ public class Predator {
 						// sum over the probabilities of performing action a in state s
 						stateValue += tempValue * validAgentMoves.get(hypotheticalEnvironment.nextTo(hypotheticalEnvironment.agent.pos, actionList[agentAction]));
 					}
-					grid[i][j] = stateValue;
-										
+					grid[i][j] = stateValue;					
 				}
 			}//end looping through all states
 			delta = Math.max(delta, sum(abs(minus(oldGrid, grid))));
@@ -135,8 +183,15 @@ public class Predator {
 		}while( delta > theta );
 		System.out.printf("Policy evaluation iterations:%d\tGamma:%f\n", counter, gamma);
 		return grid;
-	}
+	}//end policyEvalutation
 
+	/**
+	 * Evaluate the states according to the best actions.
+	 * @param environment
+	 * @param theta
+	 * @param gamma
+	 * @return the state-values
+	 */
 	public double[][] valueIteration(State environment, double theta, double gamma)
 	{
 		double delta;
@@ -172,8 +227,7 @@ public class Predator {
 						if( tempValue > bestActionStateValue )	// maximize expected reward over the actions
 							bestActionStateValue = tempValue;
 					}
-					grid[i][j] = bestActionStateValue;
-										
+					grid[i][j] = bestActionStateValue;						
 				}
 			}//end looping through all states
 			delta = Math.max(delta, sum(abs(minus(oldGrid, grid))));
@@ -182,8 +236,15 @@ public class Predator {
 		}while( delta > theta );
 		System.out.printf("Value iterations:%d\tGamma:%f\n", counter, gamma);
 		return grid;
-	}
+	}//end valueIteration
 	
+	/**
+	 * Improve the policy of the predator.
+	 * @param environment
+	 * @param theta		Used in policy evalutation
+	 * @param gamma		Used in policy evalutation
+	 * @return the state-values
+	 */
 	public double[][] policyIteration(State environment, double theta, double gamma)
 	{
 		int counter = 0;
@@ -204,6 +265,12 @@ public class Predator {
 		return grid;
 	}
 	
+	/**
+	 * Make a policy given the state-values
+	 * @param environment
+	 * @param grid	state-values
+	 * @return new policy
+	 */
 	public static Policy makePolicy(State environment, double[][] grid)
 	{
 		double oldPreyValue = grid[environment.prey.pos.x][environment.prey.pos.y];
@@ -221,24 +288,34 @@ public class Predator {
 		return policy;
 	}
 	
+	/**
+	 * Get the StatePolicy for a position of the grid. 
+	 * The state-values of the neighbour positions are compared and 
+	 * the actions that lead to the positions with the highest state-values
+	 * get equal probability while the other actions get a probability of 0.
+	 * @param environment
+	 * @param pos
+	 * @param grid	state-values
+	 * @return	StatePolicy
+	 */
 	public static StatePolicy getStatePolicy(State environment, Point pos, double[][] grid)
 	{
-		List<Point> neighbours = getNeighbours(environment, pos);
+		List<Point> neighbours = getNeighbours(environment, pos);	//get neighbour positions
 		
-		boolean[] usedActions = new boolean[neighbours.size()];
-		int usedActionCounter = 0;
-		double bestValue = 0;
+		boolean[] usedActions = new boolean[neighbours.size()];	// actions that go to pos with highest state-value 
+		int usedActionCounter = 0;	// amount of actions that lead to pos with highest state-value
+		double bestValue = 0;	// best state-value
 		List<Point> bestActions = new ArrayList<Point>();
 		for(int i=0; i<neighbours.size(); i++)
 		{
 			double tempValue = grid[neighbours.get(i).x][neighbours.get(i).y];
-			if (tempValue == bestValue )
+			if (tempValue == bestValue )	// add action to best actions
 			{
 				bestActions.add(neighbours.get(i));
 				usedActions[i]=true;
 				usedActionCounter++;
 			}
-			else if (tempValue > bestValue )
+			else if (tempValue > bestValue )// reset best actions
 			{
 				usedActionCounter = 1;
 				usedActions = new boolean[neighbours.size()];
@@ -248,7 +325,7 @@ public class Predator {
 				bestActions.add(neighbours.get(i));
 			}
 		}
-		
+		// divide action probability over those going to positions with the highest state-value  
 		double[] policyProbs = new double[neighbours.size()];
 		double actionProb = 1.0/usedActionCounter;
 		for(int i=0; i<policyProbs.length; i++)
@@ -258,9 +335,14 @@ public class Predator {
 		}
 		
 		return new StatePolicy(policyProbs); 
-	}
+	}// end getStatePolicy
 	
-	
+	/**
+	 * Returns list of neighbour positions.
+	 * @param environment
+	 * @param pos
+	 * @return neighbours
+	 */
 	public static List<Point> getNeighbours(State environment, Point pos)
 	{
 		List<Point> neighbours = new ArrayList<Point>();
@@ -273,6 +355,11 @@ public class Predator {
 		return neighbours;
 	}
 	
+	/**
+	 * Gets map of new positions and probability of getting to that position. 
+	 * @param environment
+	 * @return Map of position-probability pairs.
+	 */
 	public Map<Point, Double> getValidMoves(State environment)
 	{
 		Map<Point, Double> hashedMoves = new HashMap<Point, Double>();
@@ -293,4 +380,4 @@ public class Predator {
 		return String.format("Predator(%d,%d)", pos.x, pos.y);
 	}
 
-}
+}//end class Predator

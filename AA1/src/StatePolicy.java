@@ -1,3 +1,11 @@
+/*
+ * By:
+ * Michael Cabot (6047262), Anna Keune (6056547), 
+ * Sander Nugteren (6042023) and Richard Rozeboom (6173292)
+ * 
+ * StatePolicy contains the probability of performing action
+ * N, E, S, W and WAIT.
+ */
 
 public class StatePolicy 
 {
@@ -7,6 +15,7 @@ public class StatePolicy
 	double W;
 	double WAIT;
 	
+	// constructors
 	public StatePolicy(StatePolicy statePolicy)
 	{
 		this.N = statePolicy.N;
@@ -32,7 +41,6 @@ public class StatePolicy
 		this.W = W;
 		this.WAIT = WAIT;
 	}
-	
 	public StatePolicy(double[] probs)
 	{
 		this.N = probs[0];
@@ -40,7 +48,7 @@ public class StatePolicy
 		this.S = probs[2];
 		this.W = probs[3];
 		this.WAIT = probs[4];
-	}
+	}//end constructors
 	
 	@Override
 	public boolean equals(Object obj)
@@ -70,8 +78,8 @@ public class StatePolicy
 			s+="S";
 		if( W>0 )
 			s+="W";
-		if( WAIT>0 )
+		if( WAIT>0 )	// the action 'WAIT' is printed as 'X'.
 			s+="X";
 		return s;
 	}
-}
+}//end class StatePolicy

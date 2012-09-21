@@ -1,3 +1,13 @@
+/*
+ * By:
+ * Michael Cabot (6047262), Anna Keune (6056547), 
+ * Sander Nugteren (6042023) and Richard Rozeboom (6173292)
+ * 
+ * Policy contains a grid of StatePolicy where each StatePolicy
+ * denotes the actions that should be performed at each position 
+ * on the grid.
+ */
+
 import java.awt.Point;
 
 
@@ -5,6 +15,7 @@ public class Policy
 {
 	StatePolicy[][] policyGrid;
 	
+	// constructors
 	public Policy(Policy policy)
 	{
 		this.policyGrid = new StatePolicy[policy.policyGrid.length]
@@ -27,12 +38,23 @@ public class Policy
 				policyGrid[i][j] = new StatePolicy();
 			}
 		}
-	}
+	}//end constructors
+	
+	/**
+	 * Set a StatePolicy
+	 * @param point
+	 * @param statePolicy
+	 */
 	public void setStatePolicy(Point point, StatePolicy statePolicy)
 	{
 		policyGrid[point.x][point.y] = statePolicy;
 	}
 	
+	/**
+	 * Get a StatePolicy
+	 * @param point
+	 * @return StatePolicy
+	 */
 	public StatePolicy getStatePolicy(Point point)
 	{
 		return policyGrid[point.x][point.y];
@@ -67,4 +89,4 @@ public class Policy
 		}
 		return s;
 	}
-}
+}//end class Policy
