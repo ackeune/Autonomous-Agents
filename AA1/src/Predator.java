@@ -162,8 +162,6 @@ public class Predator {
 						double tempValue = 0;
 						for(int preyAction=0; preyAction<actionList.length; preyAction++)	// loop through all s'
 						{
-							if( i==2 && j==5 && agentAction==1 && preyAction==4)
-								System.out.print("");
 							Point nextAgentPos = hypotheticalEnvironment.nextTo(hypotheticalEnvironment.agent.pos, actionList[agentAction]);
 							// calculate sum_{s'} [transFunc * (RewardFunc + gamma * V(s'))]
 							tempValue += hypotheticalEnvironment.transitionFunction(actionList[agentAction], actionList[preyAction]) * 

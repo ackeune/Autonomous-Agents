@@ -129,6 +129,10 @@ public class State {
 			return 0;
 		State newState = new State(this);
 		newState.agent.moveAccordingToAction(agentAction, newState);
+		if( newState.agent.pos.equals(newState.prey.pos) )	// the prey can't move if the predator catches it.
+		{
+			return 1;
+		}
 		Point nextPreyPoint = nextTo(newState.prey.pos, preyAction);
 		Map<Point, Double> validMovesHash= prey.getValidMoves(this);
 		if( validMovesHash.containsKey(nextPreyPoint) )
