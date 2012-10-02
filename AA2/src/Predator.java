@@ -238,6 +238,116 @@ public class Predator {
 		}
 		return bestAction;	// choose best action
 	}
+
+	public String softmax(State environment, double temperature, double initialValue)
+	{
+		//Calculate probabilities
+		List<String> actions = getValidActions(environment);
+		double sumQValues = 0;
+		List<Double> qValueAction = new ArrayList<Double>();
+		for(int i=0; i<actions.size(); i++)
+		{
+			StateActionPair sap = new StateActionPair(environment, actions.get(i));
+			double qValue = getStateActionValue(sap, initialValue);
+			qValueAction.add(qValue);
+			sumQValues += Math.exp(qValue/temperature);
+		}
+		
+		List<Double> probsAction = new ArrayList<Double>();
+		for(int i=0; i<qValueAction.size();i++)
+		{
+			double prob = Math.exp(qValueAction.get(i)/temperature)/sumQValues;
+			probsAction.add(prob);
+			
+		}
+		
+		//Find the action
+		String bestAction = "";
+		double maxProb = 0;
+		for(int i=0; i<probsAction.size();i++)
+		{
+			if(probsAction.get(i) > maxProb)
+			{
+				bestAction = actions.get(i);
+			}
+		}
+		return bestAction;
+	}
+	
+	/**
+	 * Make a policy given the state-values
+	 * @param environment
+	 * @param grid	state-values
+	 * @return new policy
+	 */
+	/*TODO fix
+	public static Policy makePolicy(State environment, double[][] grid)
+	{
+		double oldPreyValue = grid[environment.prey.pos.x][environment.prey.pos.y];
+		grid[environment.prey.pos.x][environment.prey.pos.y] = 1000;
+		Policy policy = new Policy(environment.stateSize);
+		for(int i=0; i<grid.length; i++)	// loop through the grid
+		{
+			for(int j=0; j<grid[i].length; j++)
+			{
+				//set probability of performing the actions for this state
+				policy.setStatePolicy(new Point(i,j), getStatePolicy(environment, new Point(i,j), grid));	
+			}
+		}		
+		grid[environment.prey.pos.x][environment.prey.pos.y] = oldPreyValue;
+		return policy;
+	}
+	*/
+	/**
+	 * Get the StatePolicy for a position of the grid. 
+	 * The state-values of the neighbour positions are compared and 
+	 * the actions that lead to the positions with the highest state-values
+	 * get equal probability while the other actions get a probability of 0.
+	 * @param environment
+	 * @param pos
+	 * @param grid	state-values
+	 * @return	StatePolicy
+	 */
+	/*TODO fix
+	public static StatePolicy getStatePolicy(State environment, Point pos, double[][] grid)
+	{
+		List<Point> neighbours = getNeighbours(environment, pos);	//get neighbour positions
+		
+		boolean[] usedActions = new boolean[neighbours.size()];	// actions that go to pos with highest state-value 
+		int usedActionCounter = 0;	// amount of actions that lead to pos with highest state-value
+		double bestValue = 0;	// best state-value
+		List<Point> bestActions = new ArrayList<Point>();
+		for(int i=0; i<neighbours.size(); i++)
+		{
+			double tempValue = grid[neighbours.get(i).x][neighbours.get(i).y];
+			if (tempValue == bestValue )	// add action to best actions
+			{
+				bestActions.add(neighbours.get(i));
+				usedActions[i]=true;
+				usedActionCounter++;
+			}
+			else if (tempValue > bestValue )// reset best actions
+			{
+				usedActionCounter = 1;
+				usedActions = new boolean[neighbours.size()];
+				usedActions[i]=true;
+				bestValue = tempValue;
+				bestActions = new ArrayList<Point>();
+				bestActions.add(neighbours.get(i));
+			}
+		}
+		// divide action probability over those going to positions with the highest state-value  
+		double[] policyProbs = new double[neighbours.size()];
+		double actionProb = 1.0/usedActionCounter;
+		for(int i=0; i<policyProbs.length; i++)
+		{
+			if( usedActions[i] )
+				policyProbs[i] = actionProb;
+		}
+		
+		return new StatePolicy(policyProbs); 
+	}// end getStatePolicy
+	*/
 	
 	/**
 	 * Returns list of neighbour positions.
