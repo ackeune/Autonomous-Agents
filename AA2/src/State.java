@@ -28,16 +28,15 @@ public class State {
 	{
 		// Ex1 - Simulator
 		System.out.println("Ex1 - Q-learning");
-		double[] alphas = {0.1};//, 0.2, 0.3, 0.4, 0.5};
-		double[] gammas = {0.1};//, 0.5, 0.7, 0.9};
+		double[] alphas = {0.5};//, 0.2, 0.3, 0.4, 0.5};	//TODO loop through all alhas
+		double[] gammas = {0.9};//, 0.5, 0.7, 0.9};	//TODO loop through all gammas
 		double initialValue = 15;
 		int episodes = 100;
-		double epsilon = 0.1;
+		double epsilon = 0.1; 
 		for(int a=0; a<alphas.length; a++)	//loop through alphas
 		{
 			for(int g=0; g<gammas.length; g++)	//loop through gammas
 			{
-
 				System.out.printf("Episode:%d\nAlpha:%f\nGamma:%f\n", 
 						episodes, alphas[a], gammas[g]);
 				qLearning(initialValue, episodes,
@@ -86,26 +85,30 @@ public class State {
 	Predator agent;
 	Prey prey;
 	Point stateSize;
+	Point relativeDistance;
 
 
 	// constructors
 	public State()
 	{
-		this.agent = new Predator(new Point(0,0), new Point(11,11));
-		this.prey = new Prey(new Point(5,5));
 		this.stateSize = new Point(11,11);
+		this.agent = new Predator(stateSize);
+		this.prey = new Prey();
+		this.relativeDistance = new Point(5,5);
 	}
 	public State(State environment)
 	{
 		this.agent = new Predator(environment.agent);
-		this.prey = new Prey(environment.prey); 
+		this.prey = new Prey(); 
 		this.stateSize = new Point(environment.stateSize);
+		this.relativeDistance = new Point(environment.relativeDistance);
 	}
-	public State(Point agentPos, Point preyPos, Point stateSize)
+	public State(Point relativeDistance, Point stateSize)
 	{
-		this.agent = new Predator(agentPos, stateSize);
-		this.prey = new Prey(preyPos);
+		this.agent = new Predator(stateSize);
+		this.prey = new Prey();
 		this.stateSize = stateSize;
+		this.relativeDistance = new Point(relativeDistance);
 	}//end constructors
 
 	/**
@@ -128,15 +131,22 @@ public class State {
 		return time;
 	}
 
-	public static Map<StateActionPair, Double> qLearning(double initialValue, int episodes,
-			double alpha, double gamma, double epsilon)
-			{	
+	/**
+	 * Perform q-learning
+	 * @param initialValue	initial value for all state-action pairs
+	 * @param episodes		amount of episodes
+	 * @param alpha			learning rate
+	 * @param gamma			discount factor
+	 * @param epsilon		e-greedy factor
+	 * @return	qValues
+	 */
+	public static Map<StateActionPair, Double> qLearning(double initialValue, int episodes,	double alpha, double gamma, double epsilon)
+	{	
 		State state = new State();	//initialize state
 		State stateClone = new State(state);
 		for(int i=0; i<episodes; i++)
 		{
-			state.agent.pos = new Point(stateClone.agent.pos);	// reset the agent
-			state.prey = new Prey(stateClone.prey);	// reset the prey
+			state.relativeDistance = new Point(stateClone.relativeDistance);	// reset the relative distance between predator and prey
 			int counter = 0;
 			while( !state.preyCaught() )
 			{
@@ -144,12 +154,11 @@ public class State {
 				state.agent.qLearnIteration(state, alpha, gamma, epsilon, initialValue);
 				state.prey.doAction(state);
 			}
-			if(counter<5)
-				System.out.println();
 			System.out.printf("Counter:%d\n",counter);
+
 		}
 		return state.agent.stateActionValues;
-			}
+	}
 
 	/**
 	 * Returns the probability of THIS state changing to a state where
@@ -160,20 +169,20 @@ public class State {
 	 */
 	public double transitionFunction(String agentAction, String preyAction)
 	{
-		if( this.agent.pos.equals(this.prey.pos) )	// no return if the prey is already caught
+		if( preyCaught() )	// no return if the prey is already caught
 			return 0;
 		State newState = new State(this);
 		newState.agent.moveAccordingToAction(agentAction, newState);
-		if( newState.agent.pos.equals(newState.prey.pos) )	// the prey can't move if the predator catches it.
+		if( newState.preyCaught() )	// the prey can't move if the predator catches it.
 		{
 			return 1;
 		}
-		Point nextPreyPoint = nextTo(newState.prey.pos, preyAction);
+		Point nextRelativeDist = nextRelativeDistancePrey(relativeDistance, preyAction);
 		Map<Point, Double> validMovesHash= prey.getValidMoves(this);
 		// the probability of the prey performing an action given the
 		// position of the prey
-		if( validMovesHash.containsKey(nextPreyPoint) )	
-			return validMovesHash.get(nextPreyPoint);	
+		if( validMovesHash.containsKey(nextRelativeDist) )	
+			return validMovesHash.get(nextRelativeDist);	
 		return 0;
 	}
 
@@ -185,67 +194,82 @@ public class State {
 	 */
 	public double rewardFunction(String agentAction, String preyAction)
 	{
-		if( this.agent.pos.equals(this.prey.pos) )	// no return if the prey is already caught
+		if( preyCaught() )	// no return if the prey is already caught
 			return 0;
-		Point nextPredatorPoint = nextTo(this.agent.pos, agentAction);
-		Point nextPreyPoint = nextTo(this.prey.pos, preyAction);
-		if( nextPredatorPoint.equals(nextPreyPoint) )
+		Point nextRelativeDist = this.nextRelativeDistancePredator(relativeDistance, agentAction);
+		nextRelativeDist = this.nextRelativeDistancePrey(relativeDistance, agentAction);
+		if( nextRelativeDist.equals(new Point(0,0)) )
 			return 10;	// reward for catching the prey
 		return 0;	
 	}
 
 	/**
 	 * Checks whether the predator has caught the prey.
-	 * @return true if predator and prey have the same position
+	 * @return true if the relative distance between predator and prey is 0,0.
 	 */
 	public boolean preyCaught(){
-		return agent.pos.equals(prey.pos);
+		return relativeDistance.equals(new Point(0,0));
 	}
 
 	/**
-	 * Calculates the position that is reached given the current position, action
-	 * and size of the toroidal world. 
-	 * E.g: nextTo((0,0), North) gives next point (10,0).
-	 * @param pos
-	 * @param action
-	 * @return the next point
+	 * Return the next relative distance according to a move performed by the prey.
+	 * This is equal to moving the predator in the opposite direction.
+	 * @param relativeDistance between predator and agent
+	 * @param action	action performed by prey
+	 * @return	new relative distance between predator and prey
 	 */
-	public Point nextTo(Point pos, String action)
+	public Point nextRelativeDistancePrey(Point relativeDistance, String action)
 	{
-		Point newP = new Point(pos);
+		if( action.equals("N") )
+			return nextRelativeDistancePredator(relativeDistance, "S");
+		if( action.equals("E") )
+			return nextRelativeDistancePredator(relativeDistance, "W");
+		if( action.equals("S") )
+			return nextRelativeDistancePredator(relativeDistance, "N");
+		if( action.equals("W") )
+			return nextRelativeDistancePredator(relativeDistance, "E");
+		return nextRelativeDistancePredator(relativeDistance, action);
+	}
+
+	/**
+	 * Return the next relative distance according to a move performed by the predator.
+	 * @param relativeDistance	between predator and agent
+	 * @param action	performed by predator
+	 * @return	new relative distance between predator and prey
+	 */
+	public Point nextRelativeDistancePredator(Point relativeDistance, String action)
+	{
+		Point newRelativeDistance = new Point(relativeDistance);
 		if( action.equals("N") )
 		{
-			newP.x--;
-			if(newP.x<0)
-				newP.x = stateSize.x-1;
+			newRelativeDistance.x--;
+			if(newRelativeDistance.x<-stateSize.x/2)
+				newRelativeDistance.x = stateSize.x/2;
 		}else if( action.equals("E") )
 		{
-			newP.y++;
-			if(newP.y>stateSize.y-1)
-				newP.y=0;
+			newRelativeDistance.y++;
+			if( newRelativeDistance.y>stateSize.y/2 )
+				newRelativeDistance.y = -stateSize.y/2;
 		}else if( action.equals("S") )
 		{
-			newP.x++;
-			if(newP.x>stateSize.x-1)
-				newP.x=0;
+			newRelativeDistance.x++;
+			if(newRelativeDistance.x>stateSize.x/2)
+				newRelativeDistance.x = -stateSize.y/2;
 		}else if( action.equals("W") )
 		{
-			newP.y--;
-			if(newP.y<0)
-				newP.y=stateSize.y-1;
+			newRelativeDistance.y--;
+			if(newRelativeDistance.y<-stateSize.y/2)
+				newRelativeDistance.y=stateSize.y/2;
 		}
-		return newP;
+		return newRelativeDistance;
 	}
 
 	@Override
 	public String toString()
 	{
-		String s = "";
-		s += prey.toString() + "\n";
-		s += agent.toString() + "\n";
-		return s;
+		return String.format("StateSize%s\nRelativeDistance\n", this.stateSize, this.relativeDistance);
 	}
-	
+
 	@Override
 	public boolean equals(Object o)
 	{
@@ -256,14 +280,15 @@ public class State {
 
 		State state = (State) o;
 
-		if( state.toString().equals(this.toString()) )
+		if( state.stateSize.equals(this.stateSize) && 
+				state.relativeDistance.equals(this.relativeDistance) )
 			return true;
 		return false;
 	}
 	@Override
 	public int hashCode()
 	{
-		int hash = this.toString().hashCode();
+		int hash = stateSize.hashCode() + relativeDistance.hashCode();
 		return hash;
 	}
 
@@ -280,6 +305,34 @@ public class State {
 				System.out.printf("%.2f\t ", grid[i][j]);
 			}
 			System.out.println("");
+		}
+	}
+	
+	/**
+	 * Print q-values.
+	 * @param agent			contains the q-values
+	 * @param initialValue	initial q-value for all state-action pairs
+	 * @param stateSize		size of the state
+	 */
+	public static void printQValues(Predator agent, double initialValue, 
+			Point stateSize)
+	{
+		String[] actions = {"N", "E", "S", "W", "WAIT"};
+		for(int x=-stateSize.x/2; x<stateSize.x/2+1; x++)
+		{
+			for(int y=-stateSize.y/2; y<stateSize.y/2+1; y++)
+			{
+				String string = "";
+				for(int a=0; a<actions.length; a++)
+				{
+					StateActionPair sap = 
+						new StateActionPair(new State(new Point(x,y), stateSize), actions[a]);
+					double value = agent.getStateActionValue(sap, initialValue);
+					string += String.format("%.2f|", value);
+				}
+				System.out.printf("%s\t", string);
+			}
+			System.out.println();
 		}
 	}
 

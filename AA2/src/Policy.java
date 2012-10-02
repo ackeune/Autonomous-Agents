@@ -76,6 +76,12 @@ public class Policy
 	}
 	
 	@Override
+	public int hashCode()
+	{
+		return this.toString().hashCode();
+	}
+	
+	@Override
 	public String toString()
 	{
 		String s = "";
@@ -89,4 +95,6 @@ public class Policy
 		}
 		return s;
 	}
+	
+	
 }//end class Policy

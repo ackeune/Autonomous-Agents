@@ -16,19 +16,6 @@ import java.util.Random;
 
 public class Prey {
 	
-	
-	Point pos = new Point();
-	
-	public Prey(Point pos)
-	{
-		this.pos = pos;
-	}
-	
-	public Prey(Prey prey)
-	{
-		this.pos = new Point(prey.pos);
-	}
-	
 	/**
 	 * Performs a random valid action. 
 	 * A action is valid if the prey doesn't move to the predator.
@@ -47,7 +34,7 @@ public class Prey {
 			sum += hashedMoves.get(key);
 			if( sum > randomDouble )
 			{
-				this.pos = key;
+				environment.relativeDistance = key;
 				return;
 			}
 		}			
@@ -63,20 +50,21 @@ public class Prey {
 	{
 		//find the positions around the prey
 		List<Point> validMoves = new ArrayList<Point>();
-		validMoves.add(environment.nextTo(pos, "N"));
-		validMoves.add(environment.nextTo(pos, "E"));
-		validMoves.add(environment.nextTo(pos, "S"));
-		validMoves.add(environment.nextTo(pos, "W"));
+		validMoves.add(environment.nextRelativeDistancePrey(environment.relativeDistance, "N"));
+		validMoves.add(environment.nextRelativeDistancePrey(environment.relativeDistance, "E"));
+		validMoves.add(environment.nextRelativeDistancePrey(environment.relativeDistance, "S"));
+		validMoves.add(environment.nextRelativeDistancePrey(environment.relativeDistance, "W"));
 		// not allowed to move to the position of the predator
-		if( validMoves.contains(environment.agent.pos) )	
-			validMoves.remove(environment.agent.pos);
+		if( validMoves.contains(new Point(0,0)) )	
+			validMoves.remove(new Point(0,0));
 		
+		double probWait = 0.8;	// probability of prey remaining at same position
 		Map<Point, Double> hashedMoves = new HashMap<Point, Double>();
-		hashedMoves.put(environment.prey.pos, 0.8);	// 0.8 prob of staying at same position
+		hashedMoves.put(new Point(environment.relativeDistance), probWait);	// 0.8 prob of staying at same position
 		for(int i=0; i<validMoves.size(); i++)
 		{
 			// equal probability of moving to valid position
-			hashedMoves.put(validMoves.get(i), 0.2/validMoves.size());	
+			hashedMoves.put(validMoves.get(i), (1-probWait)/validMoves.size());	
 		}			
 		return hashedMoves;
 	}
@@ -88,13 +76,25 @@ public class Prey {
 	 */
 	public void moveAccordingToAction(String action, State environment)
 	{
-		this.pos = environment.nextTo(pos, action);
+		environment.relativeDistance = environment.nextRelativeDistancePrey(environment.relativeDistance, action);
 	}
 	
 	@Override
-	public String toString()
+	public boolean equals(Object o)
 	{
-		return String.format("Prey(%d,%d)", pos.x, pos.y);
+		if( this == o ) 
+			return true;
+		if( o == null || getClass() != o.getClass() ) 
+			return false;
+
+		//Prey prey = (Prey) o;
+
+		return true;	// all prey are created equal
+	}
+	@Override
+	public int hashCode()
+	{
+		return 0;
 	}
 
 }//end class Prey

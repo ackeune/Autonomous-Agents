@@ -16,27 +16,23 @@ import java.util.Random;
 
 public class Predator {
 
-	Point pos;
 	Policy policy;
-	Map<StateActionPair, Double> stateActionValues;
+	Map<StateActionPair, Double> stateActionValues;	//TODO change to double array of StateActionPairs
 
 	// constructors
-	public Predator(Point pos, Point stateSize)
+	public Predator(Point stateSize)
 	{
-		this.pos = pos;
 		this.policy = new Policy(stateSize);
 		this.stateActionValues = new HashMap<StateActionPair, Double>();
 	}
-	public Predator(Point pos, Point stateSize, 
+	public Predator(Point stateSize, 
 			Map<StateActionPair, Double> stateActionValues)
 	{
-		this.pos = pos;
 		this.policy = new Policy(stateSize);
 		this.stateActionValues = stateActionValues;
 	}
 	public Predator(Predator p)
 	{
-		this.pos = new Point(p.pos);
 		this.policy = new Policy(p.policy);
 		this.stateActionValues = new HashMap<StateActionPair, Double>(p.stateActionValues);
 	}//end constructors
@@ -47,17 +43,16 @@ public class Predator {
 	 */
 	public void doAction(State environment)
 	{
-
 		Random generator = new Random();
 		//find the positions around the prey
 		List<Point> validMoves = new ArrayList<Point>();
-		validMoves.add(environment.nextTo(pos, "N"));
-		validMoves.add(environment.nextTo(pos, "E"));
-		validMoves.add(environment.nextTo(pos, "S"));
-		validMoves.add(environment.nextTo(pos, "W"));
-		validMoves.add(pos);
+		validMoves.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "N"));
+		validMoves.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "E"));
+		validMoves.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "S"));
+		validMoves.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "W"));
+		validMoves.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "WAIT"));
 		//move to a random position
-		this.pos = validMoves.get(generator.nextInt(validMoves.size()));
+		environment.relativeDistance = validMoves.get(generator.nextInt(validMoves.size()));
 	}
 
 	/**
@@ -132,14 +127,16 @@ public class Predator {
 		return sum;
 	}
 	/**
-	 * Change to pos according to the action.
+	 * Change the relative distance according to the action.
 	 * @param action
 	 * @param environment
 	 */
 	public void moveAccordingToAction(String action, State environment)
 	{
-		this.pos = environment.nextTo(pos, action);
+		environment.relativeDistance = environment.nextRelativeDistancePredator(environment.relativeDistance, action); 
 	}
+	
+	
 	
 	/**
 	 * Perform an iteration of q-learning. Take an action, observe the reward
@@ -241,79 +238,6 @@ public class Predator {
 		}
 		return bestAction;	// choose best action
 	}
-
-	
-	/**
-	 * Make a policy given the state-values
-	 * @param environment
-	 * @param grid	state-values
-	 * @return new policy
-	 */
-	public static Policy makePolicy(State environment, double[][] grid)
-	{
-		double oldPreyValue = grid[environment.prey.pos.x][environment.prey.pos.y];
-		grid[environment.prey.pos.x][environment.prey.pos.y] = 1000;
-		Policy policy = new Policy(environment.stateSize);
-		for(int i=0; i<grid.length; i++)	// loop through the grid
-		{
-			for(int j=0; j<grid[i].length; j++)
-			{
-				//set probability of performing the actions for this state
-				policy.setStatePolicy(new Point(i,j), getStatePolicy(environment, new Point(i,j), grid));	
-			}
-		}		
-		grid[environment.prey.pos.x][environment.prey.pos.y] = oldPreyValue;
-		return policy;
-	}
-	
-	/**
-	 * Get the StatePolicy for a position of the grid. 
-	 * The state-values of the neighbour positions are compared and 
-	 * the actions that lead to the positions with the highest state-values
-	 * get equal probability while the other actions get a probability of 0.
-	 * @param environment
-	 * @param pos
-	 * @param grid	state-values
-	 * @return	StatePolicy
-	 */
-	public static StatePolicy getStatePolicy(State environment, Point pos, double[][] grid)
-	{
-		List<Point> neighbours = getNeighbours(environment, pos);	//get neighbour positions
-		
-		boolean[] usedActions = new boolean[neighbours.size()];	// actions that go to pos with highest state-value 
-		int usedActionCounter = 0;	// amount of actions that lead to pos with highest state-value
-		double bestValue = 0;	// best state-value
-		List<Point> bestActions = new ArrayList<Point>();
-		for(int i=0; i<neighbours.size(); i++)
-		{
-			double tempValue = grid[neighbours.get(i).x][neighbours.get(i).y];
-			if (tempValue == bestValue )	// add action to best actions
-			{
-				bestActions.add(neighbours.get(i));
-				usedActions[i]=true;
-				usedActionCounter++;
-			}
-			else if (tempValue > bestValue )// reset best actions
-			{
-				usedActionCounter = 1;
-				usedActions = new boolean[neighbours.size()];
-				usedActions[i]=true;
-				bestValue = tempValue;
-				bestActions = new ArrayList<Point>();
-				bestActions.add(neighbours.get(i));
-			}
-		}
-		// divide action probability over those going to positions with the highest state-value  
-		double[] policyProbs = new double[neighbours.size()];
-		double actionProb = 1.0/usedActionCounter;
-		for(int i=0; i<policyProbs.length; i++)
-		{
-			if( usedActions[i] )
-				policyProbs[i] = actionProb;
-		}
-		
-		return new StatePolicy(policyProbs); 
-	}// end getStatePolicy
 	
 	/**
 	 * Returns list of neighbour positions.
@@ -324,31 +248,13 @@ public class Predator {
 	public static List<Point> getNeighbours(State environment, Point pos)
 	{
 		List<Point> neighbours = new ArrayList<Point>();
-		neighbours.add(environment.nextTo(pos, "N"));
-		neighbours.add(environment.nextTo(pos, "E"));
-		neighbours.add(environment.nextTo(pos, "S"));
-		neighbours.add(environment.nextTo(pos, "W"));
-		neighbours.add(environment.nextTo(pos, "WAIT"));
+		neighbours.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "N"));
+		neighbours.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "E"));
+		neighbours.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "S"));
+		neighbours.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "W"));
+		neighbours.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "WAIT"));
 		
 		return neighbours;
-	}
-	
-	/**
-	 * Gets map of new positions and probability of getting to that position. 
-	 * @param environment
-	 * @return Map of position-probability pairs.
-	 */
-	public Map<Point, Double> getValidMoves(State environment)
-	{
-		Map<Point, Double> hashedMoves = new HashMap<Point, Double>();
-		StatePolicy statePolicy = policy.getStatePolicy(environment.agent.pos);
-		hashedMoves.put(environment.nextTo(environment.agent.pos, "N"), statePolicy.N);
-		hashedMoves.put(environment.nextTo(environment.agent.pos, "E"), statePolicy.E);
-		hashedMoves.put(environment.nextTo(environment.agent.pos, "S"), statePolicy.S);
-		hashedMoves.put(environment.nextTo(environment.agent.pos, "W"), statePolicy.W);
-		hashedMoves.put(environment.nextTo(environment.agent.pos, "WAIT"), statePolicy.WAIT);
-		
-		return hashedMoves;
 	}
 	
 	/**
@@ -366,12 +272,28 @@ public class Predator {
 		actions.add("WAIT");
 		return actions;
 	}
-
-
+	
 	@Override
-	public String toString()
+	public boolean equals(Object o)
 	{
-		return String.format("Predator(%d,%d)", pos.x, pos.y);
+		if( this == o ) 
+			return true;
+		if( o == null || getClass() != o.getClass() ) 
+			return false;
+
+		Predator predator = (Predator) o;
+
+		if( predator.policy.equals(this.policy) &&
+				predator.stateActionValues.equals(this.stateActionValues) )
+			return true;	
+		return false;
 	}
+	
+	@Override
+	public int hashCode()
+	{
+		return policy.hashCode() + stateActionValues.hashCode();
+	}
+
 
 }//end class Predator
