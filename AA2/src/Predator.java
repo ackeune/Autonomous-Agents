@@ -242,6 +242,40 @@ public class Predator {
 		return bestAction;	// choose best action
 	}
 
+	public String softmax(State environment, double temperature, double initialValue)
+	{
+		//Calculate probabilities
+		List<String> actions = getValidActions(environment);
+		double sumQValues = 0;
+		List<Double> qValueAction = new ArrayList<Double>();
+		for(int i=0; i<actions.size(); i++)
+		{
+			StateActionPair sap = new StateActionPair(environment, actions.get(i));
+			double qValue = getStateActionValue(sap, initialValue);
+			qValueAction.add(qValue);
+			sumQValues += Math.exp(qValue/temperature);
+		}
+		
+		List<Double> probsAction = new ArrayList<Double>();
+		for(int i=0; i<qValueAction.size();i++)
+		{
+			double prob = Math.exp(qValueAction.get(i)/temperature)/sumQValues;
+			probsAction.add(prob);
+			
+		}
+		
+		//Find the action
+		String bestAction = "";
+		double maxProb = 0;
+		for(int i=0; i<probsAction.size();i++)
+		{
+			if(probsAction.get(i) > maxProb)
+			{
+				bestAction = actions.get(i);
+			}
+		}
+		return bestAction;
+	}
 	
 	/**
 	 * Make a policy given the state-values
