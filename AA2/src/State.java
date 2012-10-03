@@ -29,36 +29,77 @@ public class State {
 	 */
 	public static void main(String[] args)
 	{
-		// Ex1 - Q-learning
-		
 		try {
-			String fileName = "episodeLengths_egreedy.txt";
-			//String fileName = "episodeLengths_softmax.txt";
-			PrintWriter out = new PrintWriter(new FileWriter(fileName));
-			
-			System.out.println("Ex1 - Q-learning");
-			double[] alphas = {0.1, 0.2, 0.3, 0.4, 0.5};	
-			double[] gammas = {0.1, 0.5, 0.7, 0.9};	
-			double initialValue = 15;
-			int episodes = 100;
-			double epsilon = 0.1; 
-			//double temperature = 0.1;
-			for(int a=0; a<alphas.length; a++)	//loop through alphas
+			/*	//TODO uncomment
+			// Ex1 - Q-learning
+			int runs1 = 10;
+			for(int r=0; r<runs1; r++)
 			{
-				for(int g=0; g<gammas.length; g++)	//loop through gammas
+				String fileNameEGreedy = String.format("episodeLengths_egreedy%d", r);
+				String fileNameSoftmax = String.format("episodeLengths_softmax%d", r);
+				PrintWriter outEGreedy = new PrintWriter(new FileWriter(fileNameEGreedy+".txt"));
+				PrintWriter outSoftmax = new PrintWriter(new FileWriter(fileNameSoftmax+".txt"));
+
+				System.out.printf("Ex1 - Q-learning\n");
+				double[] alphas = {0.1, 0.2, 0.3, 0.4, 0.5};	
+				double[] gammas = {0.1, 0.5, 0.7, 0.9};	
+				double initialValue = 15;
+				int episodes = 100;
+				double epsilon = 0.1; 
+				double temperature = 0.1;
+				for(int a=0; a<alphas.length; a++)	//loop through alphas
 				{
-					System.out.printf("Alpha:%f\tGamma:%f\n", alphas[a], gammas[g]);
-					//String episodeLengths = qLearningSoftMax(initialValue, episodes, alphas[a], gammas[g], temperature);
-					String episodeLengths = qLearningEGreedy(initialValue, episodes, alphas[a], gammas[g], epsilon);
-					out.println(episodeLengths);	// write to file
-					//System.out.println();				
+					for(int g=0; g<gammas.length; g++)	//loop through gammas
+					{
+						System.out.printf("Alpha:%f\tGamma:%f\n", alphas[a], gammas[g]);
+						String episodeLengthsEGreedy = qLearningEGreedy(initialValue, episodes, alphas[a], gammas[g], epsilon);
+						String episodeLengthsSoftmax = qLearningSoftmax(initialValue, episodes, alphas[a], gammas[g], temperature);
+						// write to files
+						outEGreedy.println(episodeLengthsEGreedy);
+						outSoftmax.println(episodeLengthsSoftmax);
+						//System.out.println();				
+					}
 				}
+				// close to files
+				outEGreedy.close();	
+				outSoftmax.close();
 			}
-			out.close();	// close to file
+			*/
+			// Ex2 - Q-learning	different e-values and optimistic initialization
+			int runs2 = 10;
+			for(int r=0; r<runs2; r++)
+			{
+				double[] alphas = {0.1, 0.5};
+				double[] gammas = {0.1, 0.9};
+				double[] epsilons = {0.1, 0.3, 0.5, 0.7};
+				double[] initialValues = {5, 10, 15, 30};
+				int episodes = 100;
+				for(int a=0; a<alphas.length; a++)
+				{
+					for(int g=0; g<gammas.length; g++)
+					{
+						String fileNameEGreedy = String.format("episodeLengths_egreedy_fixedAlpha%fGamma%f_%d", alphas[a], gammas[g], r);
+						PrintWriter outEGreedy = new PrintWriter(new FileWriter(fileNameEGreedy+".txt"));
+						for(int e=0; e<epsilons.length; e++)
+						{
+							for(int i=0; i<initialValues.length; i++)
+							{
+								System.out.printf("Epsilon:%f\tInitialValue:%f\n", epsilons[e], initialValues[i]);
+								String episodeLenghtsEGreedy = qLearningEGreedy(initialValues[i], episodes, alphas[a], gammas[g], epsilons[e]);
+								outEGreedy.println(episodeLenghtsEGreedy);
+							}//end for initial-values							
+						}//end for epsilons
+						outEGreedy.close();
+					}//end for gammas
+				}//end for alphas
+			}//end for runs
+			
+			// Ex3
+			//TODO
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 
 	}//end main
 
@@ -175,8 +216,8 @@ public class State {
 		}
 		return episodeLengths;
 	}
-	
-	public static String qLearningSoftMax(double initialValue, int episodes,	double alpha, double gamma, double temperature)
+
+	public static String qLearningSoftmax(double initialValue, int episodes,	double alpha, double gamma, double temperature)
 	{	
 		String episodeLengths = "";
 		State state = new State();	//initialize state
@@ -196,7 +237,7 @@ public class State {
 		}
 		return episodeLengths;
 	}
-	
+
 	public static Map<StateActionPair, Double> sarsa(double initialValue, int episodes,	double alpha, double gamma, double epsilon)
 	{	
 		State state = new State();	//initialize state
@@ -368,7 +409,7 @@ public class State {
 			System.out.println("");
 		}
 	}
-	
+
 	/**
 	 * Print q-values.
 	 * @param agent			contains the q-values
