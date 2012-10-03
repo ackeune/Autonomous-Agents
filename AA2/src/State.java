@@ -26,10 +26,10 @@ public class State {
 	 */
 	public static void main(String[] args)
 	{
-		// Ex1 - Simulator
+		// Ex1 - Q-learning
 		System.out.println("Ex1 - Q-learning");
-		double[] alphas = {0.5};//, 0.2, 0.3, 0.4, 0.5};	//TODO loop through all alhas
-		double[] gammas = {0.9};//, 0.5, 0.7, 0.9};	//TODO loop through all gammas
+		double[] alphas = {0.1, 0.2, 0.3, 0.4, 0.5};	
+		double[] gammas = {0.1, 0.5, 0.7, 0.9};	
 		double initialValue = 15;
 		int episodes = 100;
 		double epsilon = 0.1; 
@@ -37,10 +37,8 @@ public class State {
 		{
 			for(int g=0; g<gammas.length; g++)	//loop through gammas
 			{
-				System.out.printf("Episode:%d\nAlpha:%f\nGamma:%f\n", 
-						episodes, alphas[a], gammas[g]);
-				qLearning(initialValue, episodes,
-						alphas[a], gammas[g], epsilon);
+				System.out.printf("Alpha:%f\tGamma:%f\n", alphas[a], gammas[g]);
+				qLearning(initialValue, episodes, alphas[a], gammas[g], epsilon);
 				System.out.println();				
 			}
 		}
@@ -154,8 +152,7 @@ public class State {
 				state.agent.qLearnIteration(state, alpha, gamma, epsilon, initialValue);
 				state.prey.doAction(state);
 			}
-			System.out.printf("Counter:%d\n",counter);
-
+			System.out.printf("%d ",counter);	// print episode length
 		}
 		return state.agent.stateActionValues;
 	}
@@ -167,6 +164,8 @@ public class State {
 	 * @param preyAction	The action the prey performs
 	 * @return	The probability of reaching the state after the actions have been performed.
 	 */
+	//TODO check if correct: do agent and prey move at same time?
+	// should have input oldState and newState?
 	public double transitionFunction(String agentAction, String preyAction)
 	{
 		if( preyCaught() )	// no return if the prey is already caught
@@ -192,6 +191,8 @@ public class State {
 	 * @param preyAction
 	 * @return 10 if predator catches the prey, else 0.
 	 */
+	//TODO check if correct: do agent and prey move at same time?
+	// should have input oldState and newState?
 	public double rewardFunction(String agentAction, String preyAction)
 	{
 		if( preyCaught() )	// no return if the prey is already caught
