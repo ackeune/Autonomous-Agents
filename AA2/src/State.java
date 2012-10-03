@@ -17,6 +17,8 @@ import java.awt.Point;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -217,6 +219,59 @@ public class State {
 		return state.agent.stateActionValues;
 	}
 
+	public static void onPolicyMC(double initialValue, int episodes,double epsilon, double gamma)
+	{
+		//initialization
+		State state = new State();
+		ArrayList<StateActionPair> sapsEpisode = new ArrayList<StateActionPair>();
+		Map<StateActionPair, Double> returns = new HashMap<StateActionPair,Double>();
+		
+		
+		for(int n = 0; n<episodes; n++)
+		{
+			//generate episode
+			sapsEpisode = state.agent.generateEpisode(state);
+			
+			//calculate returns
+			StateActionPair lastSap = sapsEpisode.get(sapsEpisode.size()-1);
+			returns.put(lastSap, 10.0);		
+			double nextReturns = 0;
+			//loop through the StateActionPairs backwards to calculate the rewards
+			for(int i = sapsEpisode.size()-2; i>=0 ;i--)
+			{
+				StateActionPair sap = sapsEpisode.get(i);
+				StateActionPair nextSap = sapsEpisode.get(i+1);
+				double nextReturn = returns.get(nextSap);
+				double returnValue = Math.pow(gamma,i)*nextReturn;
+				nextReturns += nextReturn;
+				returnValue = returnValue + nextReturns;
+				returns.put(sap, returnValue);
+			}
+		
+			//calculate q values by averaging returns
+			for(int i = 0; i<state.agent.stateActionValues.size();i++)
+			{
+				StateActionPair sap = sapsEpisode.get(i);
+				double returnValue = returns.get(sap);
+				if(n==0)
+				{
+					double newQValue = returnValue;
+					state.agent.stateActionValues.put(sap, newQValue);
+				}
+				else
+				{
+					double oldQValue = state.agent.stateActionValues.get(sap);
+					double newQValue = (oldQValue+returnValue)/2;
+					state.agent.stateActionValues.put(sap, newQValue);
+				}
+			}
+			
+			// for each s in the episode: a* = max_a Q(s,a)
+			
+			// update policy
+		}
+		
+	}
 	/**
 	 * Returns the probability of THIS state changing to a state where
 	 * the agent does an action and the prey does an action. 

@@ -248,6 +248,31 @@ public class Predator {
 		stateActionValues.put(oldSap, updatedValue);	// update qValue of State-action pair
 	}
 
+	public ArrayList<StateActionPair> generateEpisode(State environment)
+	{
+		ArrayList<StateActionPair> sapsEpisode = new ArrayList<StateActionPair>();
+		
+		while( !environment.preyCaught() )
+		{
+			//move predator with policy
+			String action = getMovefromPolicy(environment);
+			moveAccordingToAction(action,environment);
+			StateActionPair newSap = new StateActionPair(environment, action);
+			sapsEpisode.add(newSap);
+			//move prey
+			environment.prey.doAction(environment);
+		}
+		
+		return sapsEpisode;
+	}
+	
+	public String getMovefromPolicy(State environment)
+	{
+		int posX = environment.relativeDistance.x - 5;
+		int posY = environment.relativeDistance.y - 5;
+		StatePolicy policy = this.policy.getStatePolicy(new Point(posX, posY));
+		return policy.getMax();
+	}
 	/**
 	 * Get the value of a state action pair. If state action pair is not known
 	 * then 'initialValue' is returned.
