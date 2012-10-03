@@ -201,6 +201,52 @@ public class Predator {
 		double updatedValue = oldQ + alpha*(reward + gamma*bestQValue - oldQ);
 		stateActionValues.put(oldSap, updatedValue);	// update qValue of State-action pair
 	}
+	
+	/**
+	 * Sarsa iteration.
+	 * @param environment
+	 * @param alpha
+	 * @param gamma
+	 * @param epsilon
+	 * @param initialValue
+	 * @param action
+	 * @return
+	 */
+	public String sarsaIteration(State environment, double alpha, double gamma, double epsilon,
+			double initialValue, String action)
+	{
+		State oldEnvironment = new State(environment);
+		moveAccordingToAction(action, environment);	// take action
+		double reward = 0;
+		if( environment.preyCaught() )	// observe reward
+			reward = 10;
+		String nextAction = eGreedyAction(environment, epsilon, initialValue); // a = a'
+		updateQValueSarsa(oldEnvironment, environment, action, nextAction, reward, alpha, gamma, initialValue);
+		return nextAction;
+	}
+	
+	/**
+	 * Update the q-Value for sarsa (given the next action)
+	 * @param oldEnvironment	s
+	 * @param environment		s'
+	 * @param action			a
+	 * @param nextAction		a'
+	 * @param reward
+	 * @param alpha
+	 * @param gamma
+	 * @param initialValue
+	 */
+	public void updateQValueSarsa(State oldEnvironment, State environment, String action, String nextAction, double reward, double alpha,
+			double gamma, double initialValue)
+	{
+		StateActionPair oldSap = new StateActionPair(oldEnvironment, action);
+		double oldQ = getStateActionValue(oldSap, initialValue);
+
+		StateActionPair newSap = new StateActionPair(environment, nextAction);
+		double newQ = getStateActionValue(newSap, initialValue);
+		double updatedValue = oldQ + alpha*(reward + gamma*newQ - oldQ);
+		stateActionValues.put(oldSap, updatedValue);	// update qValue of State-action pair
+	}
 
 	/**
 	 * Get the value of a state action pair. If state action pair is not known

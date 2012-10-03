@@ -196,6 +196,26 @@ public class State {
 		}
 		return episodeLengths;
 	}
+	
+	public static Map<StateActionPair, Double> sarsa(double initialValue, int episodes,	double alpha, double gamma, double epsilon)
+	{	
+		State state = new State();	//initialize state
+		State stateClone = new State(state);
+		for(int i=0; i<episodes; i++)
+		{
+			state.relativeDistance = new Point(stateClone.relativeDistance);	// reset the relative distance between predator and prey
+			int counter = 0;
+			String action = state.agent.eGreedyAction(state, epsilon, initialValue); // a
+			while( !state.preyCaught() )
+			{
+				counter++;
+				action = state.agent.sarsaIteration(state, alpha, gamma, epsilon, initialValue, action);
+				state.prey.doAction(state);
+			}
+			System.out.printf("%d ",counter);	// print episode length
+		}
+		return state.agent.stateActionValues;
+	}
 
 	/**
 	 * Returns the probability of THIS state changing to a state where
