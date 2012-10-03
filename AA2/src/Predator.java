@@ -17,7 +17,7 @@ import java.util.Random;
 public class Predator {
 
 	Policy policy;
-	Map<StateActionPair, Double> stateActionValues;	//TODO change to double array of StateActionPairs
+	Map<StateActionPair, Double> stateActionValues;	
 
 	// constructors
 	public Predator(Point stateSize)
@@ -147,10 +147,22 @@ public class Predator {
 	 * @param epsilon		e-greedy probability
 	 * @param initialValue  initial value for all state-action pairs
 	 */
-	public void qLearnIteration(State environment, double alpha, double gamma, double epsilon,
+	public void qLearnIterationEGreedy(State environment, double alpha, double gamma, double epsilon,
 			double initialValue)
 	{
 		String action = eGreedyAction(environment, epsilon, initialValue);
+		State oldEnvironment = new State(environment);
+		moveAccordingToAction(action, environment);	// take action
+		double reward = 0;
+		if( environment.preyCaught() )	// observe reward
+			reward = 10;
+		updateQValue(oldEnvironment, environment, action, reward, alpha, gamma, initialValue);
+	}
+	
+	public void qLearnIterationSoftMax(State environment, double alpha, double gamma, double temperature,
+			double initialValue)
+	{
+		String action = softmax(environment, temperature, initialValue);
 		State oldEnvironment = new State(environment);
 		moveAccordingToAction(action, environment);	// take action
 		double reward = 0;
@@ -269,6 +281,7 @@ public class Predator {
 			if(probsAction.get(i) > maxProb)
 			{
 				bestAction = actions.get(i);
+				maxProb = probsAction.get(i);
 			}
 		}
 		return bestAction;

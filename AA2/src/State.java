@@ -14,6 +14,9 @@
  */
 
 import java.awt.Point;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Map;
 
 
@@ -27,21 +30,35 @@ public class State {
 	public static void main(String[] args)
 	{
 		// Ex1 - Q-learning
-		System.out.println("Ex1 - Q-learning");
-		double[] alphas = {0.1, 0.2, 0.3, 0.4, 0.5};	
-		double[] gammas = {0.1, 0.5, 0.7, 0.9};	
-		double initialValue = 15;
-		int episodes = 100;
-		double epsilon = 0.1; 
-		for(int a=0; a<alphas.length; a++)	//loop through alphas
-		{
-			for(int g=0; g<gammas.length; g++)	//loop through gammas
+		
+		try {
+			String fileName = "episodeLengths_egreedy.txt";
+			//String fileName = "episodeLengths_softmax.txt";
+			PrintWriter out = new PrintWriter(new FileWriter(fileName));
+			
+			System.out.println("Ex1 - Q-learning");
+			double[] alphas = {0.1, 0.2, 0.3, 0.4, 0.5};	
+			double[] gammas = {0.1, 0.5, 0.7, 0.9};	
+			double initialValue = 15;
+			int episodes = 100;
+			double epsilon = 0.1; 
+			//double temperature = 0.1;
+			for(int a=0; a<alphas.length; a++)	//loop through alphas
 			{
-				System.out.printf("Alpha:%f\tGamma:%f\n", alphas[a], gammas[g]);
-				qLearning(initialValue, episodes, alphas[a], gammas[g], epsilon);
-				System.out.println();				
+				for(int g=0; g<gammas.length; g++)	//loop through gammas
+				{
+					System.out.printf("Alpha:%f\tGamma:%f\n", alphas[a], gammas[g]);
+					//String episodeLengths = qLearningSoftMax(initialValue, episodes, alphas[a], gammas[g], temperature);
+					String episodeLengths = qLearningEGreedy(initialValue, episodes, alphas[a], gammas[g], epsilon);
+					out.println(episodeLengths);	// write to file
+					//System.out.println();				
+				}
 			}
+			out.close();	// close to file
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+		
 
 	}//end main
 
@@ -138,8 +155,9 @@ public class State {
 	 * @param epsilon		e-greedy factor
 	 * @return	qValues
 	 */
-	public static Map<StateActionPair, Double> qLearning(double initialValue, int episodes,	double alpha, double gamma, double epsilon)
+	public static String qLearningEGreedy(double initialValue, int episodes,	double alpha, double gamma, double epsilon)
 	{	
+		String episodeLengths = "";
 		State state = new State();	//initialize state
 		State stateClone = new State(state);
 		for(int i=0; i<episodes; i++)
@@ -149,12 +167,34 @@ public class State {
 			while( !state.preyCaught() )
 			{
 				counter++;
-				state.agent.qLearnIteration(state, alpha, gamma, epsilon, initialValue);
+				state.agent.qLearnIterationEGreedy(state, alpha, gamma, epsilon, initialValue);
 				state.prey.doAction(state);
 			}
-			System.out.printf("%d ",counter);	// print episode length
+			episodeLengths += String.format("%d ", counter);
+			//System.out.printf("%d ",counter);	// print episode length			
 		}
-		return state.agent.stateActionValues;
+		return episodeLengths;
+	}
+	
+	public static String qLearningSoftMax(double initialValue, int episodes,	double alpha, double gamma, double temperature)
+	{	
+		String episodeLengths = "";
+		State state = new State();	//initialize state
+		State stateClone = new State(state);
+		for(int i=0; i<episodes; i++)
+		{
+			state.relativeDistance = new Point(stateClone.relativeDistance);	// reset the relative distance between predator and prey
+			int counter = 0;
+			while( !state.preyCaught() )
+			{
+				counter++;
+				state.agent.qLearnIterationSoftMax(state, alpha, gamma, temperature, initialValue);
+				state.prey.doAction(state);
+			}
+			episodeLengths += String.format("%d ", counter);
+			//System.out.printf("%d ",counter);	// print episode length			
+		}
+		return episodeLengths;
 	}
 
 	/**
