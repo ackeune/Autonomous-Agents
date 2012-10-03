@@ -38,7 +38,7 @@ public class State {
 			for(int g=0; g<gammas.length; g++)	//loop through gammas
 			{
 				System.out.printf("Alpha:%f\tGamma:%f\n", alphas[a], gammas[g]);
-				qLearning(initialValue, episodes, alphas[a], gammas[g], epsilon);
+				sarsa(initialValue, episodes, alphas[a], gammas[g], epsilon);
 				System.out.println();				
 			}
 		}
@@ -150,6 +150,26 @@ public class State {
 			{
 				counter++;
 				state.agent.qLearnIteration(state, alpha, gamma, epsilon, initialValue);
+				state.prey.doAction(state);
+			}
+			System.out.printf("%d ",counter);	// print episode length
+		}
+		return state.agent.stateActionValues;
+	}
+	
+	public static Map<StateActionPair, Double> sarsa(double initialValue, int episodes,	double alpha, double gamma, double epsilon)
+	{	
+		State state = new State();	//initialize state
+		State stateClone = new State(state);
+		for(int i=0; i<episodes; i++)
+		{
+			state.relativeDistance = new Point(stateClone.relativeDistance);	// reset the relative distance between predator and prey
+			int counter = 0;
+			String action = state.agent.eGreedyAction(state, epsilon, initialValue); // a
+			while( !state.preyCaught() )
+			{
+				counter++;
+				action = state.agent.sarsaIteration(state, alpha, gamma, epsilon, initialValue, action);
 				state.prey.doAction(state);
 			}
 			System.out.printf("%d ",counter);	// print episode length
