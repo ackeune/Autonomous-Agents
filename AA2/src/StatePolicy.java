@@ -50,6 +50,38 @@ public class StatePolicy
 		this.WAIT = probs[4];
 	}//end constructors
 	
+	public String getMax()
+	{
+		double bestValue = 0;
+		String bestAction = "";
+		if( this.N > bestValue )
+		{
+			bestValue = this.N;
+			bestAction = "N";
+		}	
+		else if(this.E > bestValue)
+		{
+			bestValue = this.E;
+			bestAction = "E";
+		}
+		else if(this.S > bestValue)
+		{
+			bestValue = this.S;
+			bestAction = "S";
+		}
+		else if(this.W > bestValue)
+		{
+			bestValue = this.W;
+			bestAction = "W";
+		}	
+		else if(this.WAIT > bestValue)
+		{
+			bestValue = this.WAIT;
+			bestAction = "WAIT";
+		}
+		return bestAction;
+	}
+	
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -82,4 +114,6 @@ public class StatePolicy
 			s+="X";
 		return s;
 	}
+	
+
 }//end class StatePolicy
