@@ -32,7 +32,7 @@ public class State {
 	public static void main(String[] args)
 	{
 		try {
-			// Ex1 - Q-learning
+			// Ex1 - Q-learning / Ex3 Softmax
 			int runs1 = 0;  //skips ex1 if set to 0
 			for(int r=0; r<runs1; r++)
 			{
@@ -67,7 +67,7 @@ public class State {
 			}
 			
 			// Ex2 - Q-learning	different e-values and optimistic initialization
-			int runs2 = 10;
+			int runs2 = 0;
 			for(int r=0; r<runs2; r++)
 			{
 				double[] alphas = {0.1, 0.5};
@@ -95,8 +95,33 @@ public class State {
 				}//end for alphas
 			}//end for runs
 			
-			// Ex3
-			//TODO
+			// Ex4 Sarsa
+			int runsSarsa = 10;
+			for(int r=0; r<runsSarsa; r++)
+			{
+				System.out.println(r);
+				String fileNameSarsa = String.format("episodeLengths_sarsa%d", r);
+				PrintWriter outSarsa = new PrintWriter(new FileWriter(fileNameSarsa+".txt"));
+
+				double[] alphas = {0.1, 0.2, 0.3, 0.4, 0.5};	
+				double[] gammas = {0.1, 0.5, 0.7, 0.9};	
+				double initialValue = 15;
+				int episodes = 100;
+				double epsilon = 0.1; 
+				for(int a=0; a<alphas.length; a++)	//loop through alphas
+				{
+					for(int g=0; g<gammas.length; g++)	//loop through gammas
+					{
+						System.out.printf("Alpha:%f\tGamma:%f\n", alphas[a], gammas[g]);
+						String episodeLengthsSarsa = sarsa(initialValue, episodes, alphas[a], gammas[g], epsilon);
+						// write to files
+						outSarsa.println(episodeLengthsSarsa);
+					}
+				}
+				// close to files
+				outSarsa.close();	
+			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -189,13 +214,13 @@ public class State {
 	}
 
 	/**
-	 * Perform q-learning
+	 * Perform q-learning with egreedy action selection.
 	 * @param initialValue	initial value for all state-action pairs
 	 * @param episodes		amount of episodes
 	 * @param alpha			learning rate
 	 * @param gamma			discount factor
 	 * @param epsilon		e-greedy factor
-	 * @return	qValues
+	 * @return	string of episode lengths
 	 */
 	public static String qLearningEGreedy(double initialValue, int episodes,	double alpha, double gamma, double epsilon)
 	{	
@@ -218,7 +243,16 @@ public class State {
 		return episodeLengths;
 	}
 	
-	public static String qLearningSoftmax(double initialValue, int episodes,	double alpha, double gamma, double temperature)
+	/**
+	 * Perform q-learning with softmax action selection.
+	 * @param initialValue	initial value for all state-action pairs
+	 * @param episodes		amount of episodes
+	 * @param alpha			learning rate
+	 * @param gamma			discount factor
+	 * @param epsilon		e-greedy factor
+	 * @return	string of episode lengths
+	 */
+	public static String qLearningSoftmax(double initialValue, int episodes, double alpha, double gamma, double temperature)
 	{	
 		String episodeLengths = "";
 		State state = new State();	//initialize state
@@ -239,8 +273,18 @@ public class State {
 		return episodeLengths;
 	}
 	
-	public static Map<StateActionPair, Double> sarsa(double initialValue, int episodes,	double alpha, double gamma, double epsilon)
+	/**
+	 * Perform sarsa.
+	 * @param initialValue	initial value for all state-action pairs
+	 * @param episodes		amount of episodes
+	 * @param alpha			learning rate
+	 * @param gamma			discount factor
+	 * @param epsilon		e-greedy factor
+	 * @return	string of episode lengths
+	 */
+	public static String sarsa(double initialValue, int episodes, double alpha, double gamma, double epsilon)
 	{	
+		String episodeLengths = "";
 		State state = new State();	//initialize state
 		State stateClone = new State(state);
 		for(int i=0; i<episodes; i++)
@@ -254,9 +298,10 @@ public class State {
 				action = state.agent.sarsaIteration(state, alpha, gamma, epsilon, initialValue, action);
 				state.prey.doAction(state);
 			}
-			System.out.printf("%d ",counter);	// print episode length
+			episodeLengths += String.format("%d ", counter);
+			//System.out.printf("%d ",counter);	// print episode length
 		}
-		return state.agent.stateActionValues;
+		return episodeLengths;
 	}
 
 	public static void onPolicyMC(double initialValue, int episodes,double epsilon, double gamma)

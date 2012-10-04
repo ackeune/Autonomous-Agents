@@ -322,6 +322,13 @@ public class Predator {
 		return bestAction;	// choose best action
 	}
 
+	/**
+	 * Get an action according to softmax.
+	 * @param environment
+	 * @param temperature
+	 * @param initialValue	initial value of all state-action pairs
+	 * @return	softmax action
+	 */
 	public String softmax(State environment, double temperature, double initialValue)
 	{
 		//Calculate probabilities
@@ -356,7 +363,7 @@ public class Predator {
 			}
 		}
 		return bestAction;
-	}
+	}//end softmax
 	
 	/**
 	 * Make a policy given the state-values
