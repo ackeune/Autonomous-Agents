@@ -48,6 +48,8 @@ saveas(h, '../qLearningA5G9I15', 'pdf');
 
 end
 
+% ex1
+if false
 eGreedyFixedE1I15 = averageEpisodeLengths('episodeLengths_egreedy', 0, 9);
 eGreedyG1 = eGreedyFixedE1I15([1, 5, 9, 13, 17], :);
 h = figure;
@@ -84,4 +86,63 @@ xlabel('episode');
 ylabel('episode length');
 title('g=0.9')
 saveas(h, '../eGreedyFixedG9', 'pdf');
+end
 
+if false
+eGreedyFixedE1I15 = averageEpisodeLengths('episodeLengths_egreedy', 0, 9);
+softmaxFixedT1I15 = averageEpisodeLengths('episodeLengths_softmax', 0, 0);
+subset = [eGreedyFixedE1I15(end,:); softmaxFixedT1I15(end, :)];
+h = figure;
+plot(subset');
+legend('e-greedy', 'softmax');
+xlabel('episode');
+ylabel('episode length');
+title('e=0.1, t=0.1')
+saveas(h, '../eGreedyVsSoftmax', 'pdf');
+
+%plot(eGreedyFixedE1I15(end, :));
+
+softmaxFixedA5G9 = averageEpisodeLengths('softmaxFixedA5G9', 0, 9);
+softmaxSubset = softmaxFixedA5G9(1, :);
+h = figure;
+plot(softmaxSubset')
+
+end
+
+if false
+% compare e-greedy and softmax
+eGreedySoftmax = averageEpisodeLengths('compareEGreedySoftmaxFixedA5G9_', 0, 9);
+eGreedy = eGreedySoftmax([1, 3, 5, 7], :);
+softmax = eGreedySoftmax([2, 4, 6, 8], :);
+h = figure;
+plot(eGreedy');
+legend('e=0.1', 'e=0.3', 'e=0.5', 'e=0.7');
+xlabel('episode');
+ylabel('episode length');
+title('e-greedy');
+saveas(h, '../eGreedyMixedEpsilon', 'pdf');
+
+h = figure;
+plot(softmax');
+legend('t=0.1', 't=0.3', 't=0.5', 't=0.7');
+xlabel('episode');
+ylabel('episode length');
+title('softmax');
+saveas(h, '../softmaxMixedTemperature', 'pdf');
+
+h = figure;
+compare = [eGreedy(1,:); eGreedy(end,:) ; softmax(1,:); softmax(end,:)];
+plot(compare')
+legend('e-greedy, e=0.1', 'e-greedy, e=0.7', 'softmax, t=0.1', 'softmax, t=0.7');
+xlabel('episode');
+ylabel('episode length');
+saveas(h, '../compareEGreedySoftmax', 'pdf');
+end
+
+qLearningVsSarsa = averageEpisodeLengths('qLearningVsSarsa', 0, 9);
+h = figure;
+plot(qLearningVsSarsa');
+legend('q-learning', 'sarsa');
+xlabel('episode');
+ylabel('episode length');
+%saveas(h, '../compareEGreedySoftmax', 'pdf');

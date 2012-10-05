@@ -281,6 +281,8 @@ public class Predator {
 	 * @return value of state action pair
 	 */
 	public double getStateActionValue(StateActionPair sap, double initialValue){
+		if( sap.state.relativeDistance.equals(new Point(0,0)) )
+			return 0;
 		return (stateActionValues.containsKey(sap))?
 				stateActionValues.get(sap):initialValue;
 	}
