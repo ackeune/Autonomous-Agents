@@ -1,6 +1,7 @@
 function makePlots
 
-if false
+
+if true
 eGreedyFixedE1I15 = averageEpisodeLengths('episodeLengths_egreedy', 0, 9);
 eGreedyFixedE1I15Subset = eGreedyFixedE1I15([1, 4, end-3, end], :);
 h = figure;
@@ -49,7 +50,7 @@ saveas(h, '../qLearningA5G9I15', 'pdf');
 end
 
 % ex1
-if false
+if true
 eGreedyFixedE1I15 = averageEpisodeLengths('episodeLengths_egreedy', 0, 9);
 eGreedyG1 = eGreedyFixedE1I15([1, 5, 9, 13, 17], :);
 h = figure;
@@ -88,7 +89,7 @@ title('g=0.9')
 saveas(h, '../eGreedyFixedG9', 'pdf');
 end
 
-if false
+if true
 eGreedyFixedE1I15 = averageEpisodeLengths('episodeLengths_egreedy', 0, 9);
 softmaxFixedT1I15 = averageEpisodeLengths('episodeLengths_softmax', 0, 0);
 subset = [eGreedyFixedE1I15(end,:); softmaxFixedT1I15(end, :)];
@@ -102,14 +103,14 @@ saveas(h, '../eGreedyVsSoftmax', 'pdf');
 
 %plot(eGreedyFixedE1I15(end, :));
 
-softmaxFixedA5G9 = averageEpisodeLengths('softmaxFixedA5G9', 0, 9);
-softmaxSubset = softmaxFixedA5G9(1, :);
-h = figure;
-plot(softmaxSubset')
+% softmaxFixedA5G9 = averageEpisodeLengths('softmaxFixedA5G9', 0, 9);
+% softmaxSubset = softmaxFixedA5G9(1, :);
+% h = figure;
+% plot(softmaxSubset')
 
 end
 
-if false
+if true
 % compare e-greedy and softmax
 eGreedySoftmax = averageEpisodeLengths('compareEGreedySoftmaxFixedA5G9_', 0, 9);
 eGreedy = eGreedySoftmax([1, 3, 5, 7], :);
@@ -139,10 +140,12 @@ ylabel('episode length');
 saveas(h, '../compareEGreedySoftmax', 'pdf');
 end
 
+if true
 qLearningVsSarsa = averageEpisodeLengths('qLearningVsSarsa', 0, 9);
 h = figure;
 plot(qLearningVsSarsa');
 legend('q-learning', 'sarsa');
 xlabel('episode');
 ylabel('episode length');
-%saveas(h, '../compareEGreedySoftmax', 'pdf');
+saveas(h, '../compareQLearningSarsa', 'pdf');
+end
