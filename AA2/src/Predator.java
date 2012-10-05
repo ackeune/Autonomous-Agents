@@ -268,8 +268,8 @@ public class Predator {
 	
 	public String getMovefromPolicy(State environment)
 	{
-		int posX = environment.relativeDistance.x - 5;
-		int posY = environment.relativeDistance.y - 5;
+		int posX = environment.relativeDistance.x + 5;
+		int posY = environment.relativeDistance.y + 5;
 		StatePolicy policy = this.policy.getStatePolicy(new Point(posX, posY));
 		return policy.getMax();
 	}

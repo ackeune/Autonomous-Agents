@@ -28,6 +28,13 @@ public class StateActionPair
 	@Override
 	public int hashCode()
 	{
-		return state.hashCode()+action.hashCode();
+		return state.hashCode()*33+action.hashCode()*33;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format("%s %s", state ,action);
+	}
+	
 }

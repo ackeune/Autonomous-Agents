@@ -58,7 +58,7 @@ public class Prey {
 		if( validMoves.contains(new Point(0,0)) )	
 			validMoves.remove(new Point(0,0));
 		
-		double probWait = 0.8;	// probability of prey remaining at same position
+		double probWait = 1;	// probability of prey remaining at same position
 		Map<Point, Double> hashedMoves = new HashMap<Point, Double>();
 		hashedMoves.put(new Point(environment.relativeDistance), probWait);	// 0.8 prob of staying at same position
 		for(int i=0; i<validMoves.size(); i++)

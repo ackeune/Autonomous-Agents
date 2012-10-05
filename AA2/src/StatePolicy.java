@@ -1,3 +1,7 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 /*
  * By:
  * Michael Cabot (6047262), Anna Keune (6056547), 
@@ -53,33 +57,23 @@ public class StatePolicy
 	public String getMax()
 	{
 		double bestValue = 0;
-		String bestAction = "";
-		if( this.N > bestValue )
-		{
-			bestValue = this.N;
-			bestAction = "N";
-		}	
-		else if(this.E > bestValue)
-		{
-			bestValue = this.E;
-			bestAction = "E";
+		double[] actionValues = {N, E, S, W, WAIT};
+		String[] actions = {"N", "E", "S", "W", "WAIT"};
+		List<String> bestActions = new ArrayList<String>();
+		for(int i=0;i<actions.length;i++){
+			if(actionValues[i] > bestValue)
+			{
+				bestValue = actionValues[i];
+				bestActions = new ArrayList<String>();
+				bestActions.add(actions[i]);
+			}
+			else if(actionValues[i] == bestValue)
+			{
+				bestActions.add(actions[i]);
+			}
 		}
-		else if(this.S > bestValue)
-		{
-			bestValue = this.S;
-			bestAction = "S";
-		}
-		else if(this.W > bestValue)
-		{
-			bestValue = this.W;
-			bestAction = "W";
-		}	
-		else if(this.WAIT > bestValue)
-		{
-			bestValue = this.WAIT;
-			bestAction = "WAIT";
-		}
-		return bestAction;
+		Random generator = new Random();
+		return bestActions.get(generator.nextInt(bestActions.size()));
 	}
 	
 	@Override
@@ -101,17 +95,18 @@ public class StatePolicy
 	@Override
 	public String toString()
 	{
+		//return getMax();
 		String s = "";
 		if( N>0 )
-			s+="N";
+			s+="N"+this.N+"\t";
 		if( E>0 )
-			s+="E";
+			s+="E"+this.E+"\t";
 		if( S>0 )
-			s+="S";
+			s+="S"+this.S+"\t";
 		if( W>0 )
-			s+="W";
+			s+="W"+this.W+"\t";
 		if( WAIT>0 )	// the action 'WAIT' is printed as 'X'.
-			s+="X";
+			s+="X"+this.WAIT+"\t";
 		return s;
 	}
 	

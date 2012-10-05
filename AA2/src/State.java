@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -241,13 +242,13 @@ public class State {
 	}
 
 	/**
-	 * Perform q-learning with egreedy action selection.
+	 * Perform q-learning
 	 * @param initialValue	initial value for all state-action pairs
 	 * @param episodes		amount of episodes
 	 * @param alpha			learning rate
 	 * @param gamma			discount factor
 	 * @param epsilon		e-greedy factor
-	 * @return	string of episode lengths
+	 * @return	qValues
 	 */
 	public static String qLearningEGreedy(double initialValue, int episodes,	double alpha, double gamma, double epsilon)
 	{	
@@ -269,17 +270,8 @@ public class State {
 		}
 		return episodeLengths;
 	}
-
-	/**
-	 * Perform q-learning with softmax action selection.
-	 * @param initialValue	initial value for all state-action pairs
-	 * @param episodes		amount of episodes
-	 * @param alpha			learning rate
-	 * @param gamma			discount factor
-	 * @param epsilon		e-greedy factor
-	 * @return	string of episode lengths
-	 */
-	public static String qLearningSoftmax(double initialValue, int episodes, double alpha, double gamma, double temperature)
+	
+	public static String qLearningSoftmax(double initialValue, int episodes,	double alpha, double gamma, double temperature)
 	{	
 		String episodeLengths = "";
 		State state = new State();	//initialize state
@@ -299,7 +291,7 @@ public class State {
 		}
 		return episodeLengths;
 	}
-
+	
 	/**
 	 * Perform sarsa.
 	 * @param initialValue	initial value for all state-action pairs
@@ -336,55 +328,106 @@ public class State {
 		//initialization
 		State state = new State();
 		ArrayList<StateActionPair> sapsEpisode = new ArrayList<StateActionPair>();
-		Map<StateActionPair, Double> returns = new HashMap<StateActionPair,Double>();
-
-
+		Map<StateActionPair, Double> totalReturns = new HashMap<StateActionPair,Double>();
+		Map<StateActionPair, Double> occurences = new HashMap<StateActionPair, Double>();
+		
 		for(int n = 0; n<episodes; n++)
 		{
 			//generate episode
+			state.relativeDistance.x = -5;
+			state.relativeDistance.y = -5;
 			sapsEpisode = state.agent.generateEpisode(state);
-
 			//calculate returns
+			Map<StateActionPair, Double> currentReturns = new HashMap<StateActionPair,Double>();
 			StateActionPair lastSap = sapsEpisode.get(sapsEpisode.size()-1);
-			returns.put(lastSap, 10.0);		
-			double nextReturns = 0;
+			//currentReturns.put(lastSap, 10.0);		
+			//double nextReturns = 0;
 			//loop through the StateActionPairs backwards to calculate the rewards
-			for(int i = sapsEpisode.size()-2; i>=0 ;i--)
+			for(int i = sapsEpisode.size()-1; i>=0 ;i--)
 			{
 				StateActionPair sap = sapsEpisode.get(i);
-				StateActionPair nextSap = sapsEpisode.get(i+1);
-				double nextReturn = returns.get(nextSap);
-				double returnValue = Math.pow(gamma,i)*nextReturn;
-				nextReturns += nextReturn;
-				returnValue = returnValue + nextReturns;
-				returns.put(sap, returnValue);
+				//StateActionPair nextSap = sapsEpisode.get(i+1);
+				//double nextReturn = currentReturns.get(nextSap);
+				double returnValue = Math.pow(gamma,sapsEpisode.size()-(i+1))*10;
+				currentReturns.put(sap, returnValue);
 			}
-
 			//calculate q values by averaging returns
-			for(int i = 0; i<state.agent.stateActionValues.size();i++)
+			for(int i = 0; i<sapsEpisode.size();i++)
+			{
+				// add currentReturns to totalReturns
+				for (StateActionPair key : currentReturns.keySet()) 
+				{
+				    if(totalReturns.containsKey(key))
+				    {	
+				    	double value = totalReturns.get(key);
+				    	totalReturns.put(key, value+currentReturns.get(key));
+				    	occurences.put(key, occurences.get(key)+1.0);
+				    }
+				    else
+				    {
+				    	occurences.put(key, 1.0);
+				    	totalReturns.put(key, currentReturns.get(key));
+				    }
+				}
+
+				// average returns -> q
+				for (StateActionPair key : totalReturns.keySet()) 
+				{
+					double value = totalReturns.get(key);
+					double average = value/occurences.get(key);
+					state.agent.stateActionValues.put(key, average);
+				}
+				
+			}
+			
+			// for each s in the episode: a* = max_a Q(s,a)
+			for(int i=0;i<sapsEpisode.size();i++)
 			{
 				StateActionPair sap = sapsEpisode.get(i);
-				double returnValue = returns.get(sap);
-				if(n==0)
+				List<String> actions = state.agent.getValidActions(sap.state);
+				double bestQValue = 0;
+				String bestAction = "";
+				
+				//find the best Action
+				for(int a=0; a<actions.size(); a++)
 				{
-					double newQValue = returnValue;
-					state.agent.stateActionValues.put(sap, newQValue);
+					StateActionPair newSap = new StateActionPair(sap.state, actions.get(a));
+					double newQ = sap.state.agent.getStateActionValue(newSap, initialValue);
+					if( newQ > bestQValue )
+					{
+						bestQValue = newQ;
+						bestAction = actions.get(a);
+					}
 				}
-				else
+				
+				
+				//update policy
+				int posX = sap.state.relativeDistance.x + 5;
+				int posY = sap.state.relativeDistance.y + 5;
+				double[] probs = new double[5];
+				for(int a=0; a<actions.size(); a++)
 				{
-					double oldQValue = state.agent.stateActionValues.get(sap);
-					double newQValue = (oldQValue+returnValue)/2;
-					state.agent.stateActionValues.put(sap, newQValue);
+					if(actions.get(a) == bestAction)
+					{
+						probs[a] = 1 - epsilon + (epsilon/actions.size());
+						
+					}
+					else
+					{
+						probs[a] = (epsilon/actions.size());
+					}
+					
 				}
-			}
-
-			// for each s in the episode: a* = max_a Q(s,a)
-
-			// update policy
-		}
-
+				StatePolicy statePolicy = new StatePolicy(probs);
+				state.agent.policy.setStatePolicy(new Point(posX,posY), statePolicy);
+				//System.out.println(statePolicy.N);
+			}// end part c
+			//System.out.println(state.agent.policy.toString());
+		
+		}// end episodes
+		printQValues(state.agent,15,state.stateSize);
 	}//end onPolicyMC
-
+    
 	/**
 	 * Returns the probability of THIS state changing to a state where
 	 * the agent does an action and the prey does an action. 
@@ -496,7 +539,7 @@ public class State {
 	@Override
 	public String toString()
 	{
-		return String.format("StateSize%s\nRelativeDistance\n", this.stateSize, this.relativeDistance);
+		return String.format("StateSize%s\nRelativeDistance%s\n", this.stateSize, this.relativeDistance);
 	}
 
 	@Override
@@ -536,7 +579,7 @@ public class State {
 			System.out.println("");
 		}
 	}
-
+	
 	/**
 	 * Print q-values.
 	 * @param agent			contains the q-values
