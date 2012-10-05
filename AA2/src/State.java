@@ -9,7 +9,7 @@
  * State contains the static functions: 
  * 		copyArray/1, printArray/1, standardDeviation/2
  * 
- * The object State contains the agent, prey and stateSize.
+ * The object State contains the agent, prey, stateSize and relative distance between agent and prey.
  * 	  
  */
 
@@ -242,7 +242,7 @@ public class State {
 	}
 
 	/**
-	 * Perform q-learning
+	 * Perform q-learning using e-greedy
 	 * @param initialValue	initial value for all state-action pairs
 	 * @param episodes		amount of episodes
 	 * @param alpha			learning rate
@@ -271,6 +271,15 @@ public class State {
 		return episodeLengths;
 	}
 	
+	/**
+	 * Similar to qLeariningEGreedy/5, but uses softmax to choose actions.
+	 * @param initialValue
+	 * @param episodes
+	 * @param alpha
+	 * @param gamma
+	 * @param temperature
+	 * @return
+	 */
 	public static String qLearningSoftmax(double initialValue, int episodes,	double alpha, double gamma, double temperature)
 	{	
 		String episodeLengths = "";
@@ -323,6 +332,14 @@ public class State {
 		return episodeLengths;
 	}
 
+	/**
+	 * TODO fix
+	 * On policy Monte Carlo. Does not work yet. Out of memory problem.
+	 * @param initialValue
+	 * @param episodes
+	 * @param epsilon
+	 * @param gamma
+	 */
 	public static void onPolicyMC(double initialValue, int episodes,double epsilon, double gamma)
 	{
 		//initialization

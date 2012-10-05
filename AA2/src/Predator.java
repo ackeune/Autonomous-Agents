@@ -3,7 +3,7 @@
  * Michael Cabot (6047262), Anna Keune (6056547), 
  * Sander Nugteren (6042023) and Richard Rozeboom (6173292)
  * 
- * Predator has a position and policy.
+ * Predator has a policy and state-action values (Q-values).
  */
 
 import java.awt.Point;
@@ -136,11 +136,9 @@ public class Predator {
 		environment.relativeDistance = environment.nextRelativeDistancePredator(environment.relativeDistance, action); 
 	}
 	
-	
-	
 	/**
 	 * Perform an iteration of q-learning. Take an action, observe the reward
-	 * and update the q-value.
+	 * and update the q-value. Actions are chosen using e-greedy.
 	 * @param environment	s
 	 * @param alpha			learning rate
 	 * @param gamma			discount factor
@@ -159,6 +157,14 @@ public class Predator {
 		updateQValue(oldEnvironment, environment, action, reward, alpha, gamma, initialValue);
 	}
 	
+	/**
+	 * Same as qLearnIterationEGreedy/5, but uses softmax to choose actions.
+	 * @param environment	s
+	 * @param alpha			learning rate
+	 * @param gamma			discount factor
+	 * @param epsilon		e-greedy probability
+	 * @param initialValue  initial value for all state-action pairs
+	 */
 	public void qLearnIterationSoftMax(State environment, double alpha, double gamma, double temperature,
 			double initialValue)
 	{
@@ -248,6 +254,11 @@ public class Predator {
 		stateActionValues.put(oldSap, updatedValue);	// update qValue of State-action pair
 	}
 
+	/**
+	 * Runs an episode an keeps track of the state-action pairs
+	 * @param environment
+	 * @return list of state-action pairs
+	 */
 	public ArrayList<StateActionPair> generateEpisode(State environment)
 	{
 		ArrayList<StateActionPair> sapsEpisode = new ArrayList<StateActionPair>();
@@ -262,10 +273,14 @@ public class Predator {
 			//move prey
 			environment.prey.doAction(environment);
 		}
-		
 		return sapsEpisode;
 	}
 	
+	/**
+	 * Get an action from the policy given the current state
+	 * @param environment
+	 * @return action
+	 */
 	public String getMovefromPolicy(State environment)
 	{
 		int posX = environment.relativeDistance.x + 5;
@@ -273,6 +288,7 @@ public class Predator {
 		StatePolicy policy = this.policy.getStatePolicy(new Point(posX, posY));
 		return policy.getMax();
 	}
+	
 	/**
 	 * Get the value of a state action pair. If state action pair is not known
 	 * then 'initialValue' is returned.
@@ -282,7 +298,7 @@ public class Predator {
 	 */
 	public double getStateActionValue(StateActionPair sap, double initialValue){
 		if( sap.state.relativeDistance.equals(new Point(0,0)) )
-			return 0;
+			return 0;	// if prey is caught
 		return (stateActionValues.containsKey(sap))?
 				stateActionValues.get(sap):initialValue;
 	}
@@ -366,81 +382,6 @@ public class Predator {
 		}
 		return bestAction;
 	}//end softmax
-	
-	/**
-	 * Make a policy given the state-values
-	 * @param environment
-	 * @param grid	state-values
-	 * @return new policy
-	 */
-	/*TODO fix
-	public static Policy makePolicy(State environment, double[][] grid)
-	{
-		double oldPreyValue = grid[environment.prey.pos.x][environment.prey.pos.y];
-		grid[environment.prey.pos.x][environment.prey.pos.y] = 1000;
-		Policy policy = new Policy(environment.stateSize);
-		for(int i=0; i<grid.length; i++)	// loop through the grid
-		{
-			for(int j=0; j<grid[i].length; j++)
-			{
-				//set probability of performing the actions for this state
-				policy.setStatePolicy(new Point(i,j), getStatePolicy(environment, new Point(i,j), grid));	
-			}
-		}		
-		grid[environment.prey.pos.x][environment.prey.pos.y] = oldPreyValue;
-		return policy;
-	}
-	*/
-	/**
-	 * Get the StatePolicy for a position of the grid. 
-	 * The state-values of the neighbour positions are compared and 
-	 * the actions that lead to the positions with the highest state-values
-	 * get equal probability while the other actions get a probability of 0.
-	 * @param environment
-	 * @param pos
-	 * @param grid	state-values
-	 * @return	StatePolicy
-	 */
-	/*TODO fix
-	public static StatePolicy getStatePolicy(State environment, Point pos, double[][] grid)
-	{
-		List<Point> neighbours = getNeighbours(environment, pos);	//get neighbour positions
-		
-		boolean[] usedActions = new boolean[neighbours.size()];	// actions that go to pos with highest state-value 
-		int usedActionCounter = 0;	// amount of actions that lead to pos with highest state-value
-		double bestValue = 0;	// best state-value
-		List<Point> bestActions = new ArrayList<Point>();
-		for(int i=0; i<neighbours.size(); i++)
-		{
-			double tempValue = grid[neighbours.get(i).x][neighbours.get(i).y];
-			if (tempValue == bestValue )	// add action to best actions
-			{
-				bestActions.add(neighbours.get(i));
-				usedActions[i]=true;
-				usedActionCounter++;
-			}
-			else if (tempValue > bestValue )// reset best actions
-			{
-				usedActionCounter = 1;
-				usedActions = new boolean[neighbours.size()];
-				usedActions[i]=true;
-				bestValue = tempValue;
-				bestActions = new ArrayList<Point>();
-				bestActions.add(neighbours.get(i));
-			}
-		}
-		// divide action probability over those going to positions with the highest state-value  
-		double[] policyProbs = new double[neighbours.size()];
-		double actionProb = 1.0/usedActionCounter;
-		for(int i=0; i<policyProbs.length; i++)
-		{
-			if( usedActions[i] )
-				policyProbs[i] = actionProb;
-		}
-		
-		return new StatePolicy(policyProbs); 
-	}// end getStatePolicy
-	*/
 	
 	/**
 	 * Returns list of neighbour positions.

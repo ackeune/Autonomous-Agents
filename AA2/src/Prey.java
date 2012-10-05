@@ -3,7 +3,6 @@
  * Michael Cabot (6047262), Anna Keune (6056547), 
  * Sander Nugteren (6042023) and Richard Rozeboom (6173292)
  * 
- * Prey has a position.
  */
 
 import java.awt.Point;
