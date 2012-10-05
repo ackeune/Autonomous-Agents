@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * By:
  * Michael Cabot (6047262), Anna Keune (6056547), 
