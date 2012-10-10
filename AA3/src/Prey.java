@@ -13,7 +13,14 @@ import java.util.Map;
 import java.util.Random;
 
 
-public class Prey {
+public class Prey 
+{
+	Map<StateActionPair, Double> qValues;	// state-action values
+	
+	public Prey()
+	{
+		this.qValues = new HashMap<StateActionPair, Double>();
+	}
 	
 	/**
 	 * Performs a random valid action. 

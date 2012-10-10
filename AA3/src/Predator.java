@@ -55,77 +55,7 @@ public class Predator {
 		environment.relativeDistance = validMoves.get(generator.nextInt(validMoves.size()));
 	}
 
-	/**
-	 * Multiplies a double array by a factor.
-	 * @param a
-	 * @param factor
-	 * @return double array
-	 */
-	public static double[][] times(double[][] a, double factor)
-	{
-		for(int i=0; i<a.length; i++)
-			for(int j=0; j<a[i].length; j++)
-				a[i][j]*=factor;
-		return a;
-	}
-	/**
-	 * Sums two double arrays.
-	 * @param a
-	 * @param b
-	 * @return double array
-	 */
-	public static double[][] add(double[][] a, double[][] b)
-	{
-		for(int i=0; i<a.length; i++)
-			for(int j=0; j<a[i].length; j++)
-			{
-				a[i][j] += b[i][j];
-			}
-		return a;
-	}
-	/**
-	 * Subtracts two double arrays.
-	 * @param a
-	 * @param b
-	 * @return double array.
-	 */
-	public static double[][] minus(double[][] a, double[][] b)
-	{
-		for(int i=0; i<a.length; i++)
-			for(int j=0; j<a[i].length; j++)
-			{
-				a[i][j] -= b[i][j];
-			}
-		return a;
-	}
-	/**
-	 * Sets all the values of a double array to their absolute values.
-	 * @param a
-	 * @return double array.
-	 */
-	public static double[][] abs(double[][] a)
-	{
-		for(int i=0; i<a.length; i++)
-			for(int j=0; j<a[i].length; j++)
-			{
-				if( a[i][j]<0 )
-					a[i][j] = -a[i][j];
-			}
-		return a;
-	}
-	/**
-	 * Sums the values in a double array.
-	 * @param a
-	 * @return sum of values.
-	 */
-	public static double sum(double[][] a)
-	{
-		double sum = 0;
-		for(int i=0; i<a.length; i++)
-			for(int j=0; j<a[i].length; j++)
-				sum += a[i][j];
-		return sum;
-	}
+	
 	/**
 	 * Change the relative distance according to the action.
 	 * @param action
