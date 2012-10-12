@@ -4,11 +4,16 @@ public class StateActionPair
 	State state;
 	String action;
 	
+	// constructors
+	public StateActionPair(StateActionPair sap)
+	{
+		this(sap.state, sap.action);
+	}
 	public StateActionPair(State state, String action)
 	{
-		this.state = state;
-		this.action = action;
-	}
+		this.state = new State(state);
+		this.action = new String(action);
+	}//end constructors
 	
 	@Override
 	public boolean equals(Object o)

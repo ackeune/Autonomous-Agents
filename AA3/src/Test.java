@@ -1,3 +1,4 @@
+
 /*
  * By:
  * Michael Cabot (6047262), Anna Keune (6056547), 
@@ -8,7 +9,10 @@ public class Test
 
 	public static void main(String[] args) 
 	{
-
+		StateActionPair s1 = new StateActionPair(new State(1), "N");
+		StateActionPair s2 = new StateActionPair(new State(1), "N");
+		System.out.printf("%b\n", s1.equals(s2));
+		System.out.printf("%d\n%d\n", s1.hashCode(), s2.hashCode());
 	}
 	
 	/**

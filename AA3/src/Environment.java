@@ -1,4 +1,3 @@
-import java.awt.Point;
 
 /*
  * By:
@@ -41,15 +40,22 @@ public class Environment
 			while( !state.preyCaught() )
 			{
 				counter++;
-				for(int p=0; p<predators.length; p++)
+				State oldState = new State(state);
+				String[] actions = new String[predators.length];
+				for(int p=0; p<predators.length; p++) // choose and take action derived from Q
 				{
-					predators[i]
+					
+					String action = predators[p].eGreedyAction(state, epsilon, initialValue);
+					actions[p] = action;
+					predators[p].moveAccordingToAction(action, state);
 				}
-				state.agent.qLearnIterationEGreedy(state, alpha, gamma, epsilon, initialValue);
-				state.prey.doAction(state);
-			}
-			episodeLengths[i] = counter;			
-		}
+				for(int p=0; p<predators.length; p++) // update Q-values
+				{					
+					predators[p].updateQValue(oldState, state, actions[p], alpha, gamma, initialValue);
+				}	
+			}//end hunting prey
+			episodeLengths[e] = counter;			
+		}//end episodes
 		return episodeLengths;
 	}
 

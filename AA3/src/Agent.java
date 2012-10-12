@@ -59,27 +59,6 @@ public class Agent
 	}
 	
 	/**
-	 * Perform an iteration of q-learning. Take an action, observe the reward
-	 * and update the q-value. Actions are chosen using e-greedy.
-	 * @param environment	s
-	 * @param alpha			learning rate
-	 * @param gamma			discount factor
-	 * @param epsilon		e-greedy probability
-	 * @param initialValue  initial value for all state-action pairs
-	 */
-	public void qLearnIterationEGreedy(State state, double alpha, double gamma, double epsilon,
-			double initialValue)
-	{
-		String action = eGreedyAction(state, epsilon, initialValue);
-		State oldEnvironment = new State(state);
-		moveAccordingToAction(action, state);	// take action
-		double reward = 0;
-		if( environment.preyCaught() )	// observe reward
-			reward = 10;
-		updateQValue(oldEnvironment, environment, action, reward, alpha, gamma, initialValue);
-	}
-	
-	/**
 	 * Update the q-value
 	 * @param oldEnvironment s
 	 * @param environment	 s'
@@ -89,21 +68,22 @@ public class Agent
 	 * @param gamma			discount factor
 	 * @param initialValue	initial value for all state-action pairs
 	 */
-	public void updateQValue(State oldEnvironment, State environment, String action, double reward, double alpha,
+	public void updateQValue(State oldState, State state, String action, double alpha,
 			double gamma, double initialValue)
 	{
-		StateActionPair oldSap = new StateActionPair(oldEnvironment, action);
+		StateActionPair oldSap = new StateActionPair(oldState, action);
 		double oldQ = getStateActionValue(oldSap, initialValue);
 		
-		List<String> actions = getValidActions(environment);
+		List<String> actions = getValidActions(state);
 		double bestQValue = 0;
 		for(int i=0; i<actions.size(); i++)
 		{
-			StateActionPair newSap = new StateActionPair(environment, actions.get(i));
+			StateActionPair newSap = new StateActionPair(state, actions.get(i));
 			double newQ = getStateActionValue(newSap, initialValue);
 			if( newQ > bestQValue )
 				bestQValue = newQ;
 		}
+		double reward = state.getReward(index);
 		double updatedValue = oldQ + alpha*(reward + gamma*bestQValue - oldQ);
 		qValues.put(oldSap, updatedValue);	// update qValue of State-action pair
 	}

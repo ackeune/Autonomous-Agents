@@ -80,6 +80,21 @@ public class State
 				relDistSet.add(relativeDistances[i]);
 		return false;
 	}
+	
+	public double getReward(int index)
+	{
+		int reward;
+		if( confusion() )
+			reward = -10;
+		else if( preyCaught() )
+			reward = 10;
+		else
+			reward = 0;
+		if( index < 0 )
+			return -1*reward;
+		else
+			return reward;
+	}
 
 	/**
 	 * Return the next relative distance according to a move performed by the prey.
@@ -95,7 +110,7 @@ public class State
 	 * input ""
 	 * intput action-array?
 	 */
-	public Point nextRelativeDistancePrey(String action)
+	public Point[] nextRelativeDistancePrey(String action)
 	{
 		Point[] newRelativeDistances = new Point[relativeDistances.length];
 		for(int i=0; i<relativeDistances.length; i++)
@@ -114,7 +129,7 @@ public class State
 			
 			newRelativeDistances[i] = nextRelDistPred;
 		}
-		
+		return newRelativeDistances;
 	}
 
 	/**
@@ -159,7 +174,7 @@ public class State
 	@Override
 	public String toString()
 	{
-		return String.format("StateSize%s\nRelativeDistance%s\n", 
+		return String.format("StateSize%s\nRelativeDistances%s\n", 
 				this.stateSize, Arrays.asList(this.relativeDistances));
 	}
 
@@ -174,15 +189,15 @@ public class State
 		State state = (State) o;
 
 		if( state.stateSize.equals(this.stateSize) && 
-				state.relativeDistances.equals(this.relativeDistances) )
+				Arrays.deepEquals(state.relativeDistances, this.relativeDistances) )
 			return true;
 		return false;
 	}
+	
 	@Override
 	public int hashCode()
 	{
-		int hash = stateSize.hashCode() + relativeDistances.hashCode();
-		return hash;
+		return stateSize.hashCode() + Arrays.deepHashCode(relativeDistances);
 	}
 
 	/**
