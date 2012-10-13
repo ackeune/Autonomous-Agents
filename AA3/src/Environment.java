@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 
 /*
  * By:
@@ -11,24 +13,40 @@ public class Environment
 	Agent[] predators;
 	Agent prey;
 	
-	
+	// constructors
 	public Environment(int predatorAmount)
 	{
 		this.state = new State(predatorAmount);
+		if( predatorAmount > 4 )
+		{
+			System.out.println("PredatorAmount cannot be larger than 4. PredatorAmount is has been set to 4.");
+			predatorAmount = 4;
+		}
 		this.predators = new Agent[predatorAmount];
 		for(int i=0; i<predatorAmount; i++)
 			predators[i] = new Agent(i);
 		this.prey = new Agent(-1);
 	}
+	public Environment(Environment environment)
+	{
+		this(environment.state, environment.predators, environment.prey);
+	}
+	public Environment(State state, Agent[] predators, Agent prey)
+	{
+		this.state = new State(state);
+		this.predators = new Agent[predators.length];
+		System.arraycopy(predators, 0, this.predators, 0, predators.length);
+		this.prey = new Agent(prey);
+	}//end constructors
 	
 	/**
-	 * Perform q-learning using e-greedy
+	 * Perform q-learning using e-greedy action selection.
 	 * @param initialValue	initial value for all state-action pairs
 	 * @param episodes		amount of episodes
 	 * @param alpha			learning rate
 	 * @param gamma			discount factor
 	 * @param epsilon		e-greedy factor
-	 * @return	qValues
+	 * @return	episode lengths
 	 */
 	public int[] qLearningEGreedy(double initialValue, int episodes, double alpha, double gamma, double epsilon)
 	{	
@@ -57,6 +75,35 @@ public class Environment
 			episodeLengths[e] = counter;			
 		}//end episodes
 		return episodeLengths;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format("%s", this.state);
+	}
+
+	@Override
+	public boolean equals(Object o)
+	{
+		if( this == o ) 
+			return true;
+		if( o == null || getClass() != o.getClass() ) 
+			return false;
+
+		Environment environment = (Environment) o;
+
+		if( environment.state.equals(this.state) && 
+				Arrays.deepEquals(environment.predators, this.predators) &&
+				environment.prey.equals(this.prey) )
+			return true;
+		return false;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return state.hashCode() + Arrays.deepHashCode(predators) + prey.hashCode();
 	}
 
 }//end class Environment

@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /*
  * By:
@@ -20,22 +19,17 @@ public class StatePolicy
 	double WAIT;
 	
 	// constructors
+	public StatePolicy()	// random state policy
+	{
+		this(0.2, 0.2, 0.2, 0.2, 0.2);
+	}
 	public StatePolicy(StatePolicy statePolicy)
 	{
-		this.N = statePolicy.N;
-		this.E = statePolicy.E;
-		this.S = statePolicy.S;
-		this.W = statePolicy.W;
-		this.WAIT = statePolicy.WAIT;
+		this(statePolicy.N, statePolicy.E, statePolicy.S, statePolicy.W, statePolicy.WAIT);
 	}
-	public StatePolicy()
+	public StatePolicy(double[] probs)
 	{
-		this.N = 0.2;
-		this.E = 0.2;
-		this.S = 0.2;
-		this.W = 0.2;
-		this.WAIT = 0.2;
-		
+		this(probs[0], probs[1], probs[2], probs[3], probs[4]);
 	}
 	public StatePolicy(double N, double E, double S, double W, double WAIT)
 	{
@@ -44,17 +38,13 @@ public class StatePolicy
 		this.S = S;
 		this.W = W;
 		this.WAIT = WAIT;
-	}
-	public StatePolicy(double[] probs)
-	{
-		this.N = probs[0];
-		this.E = probs[1];
-		this.S = probs[2];
-		this.W = probs[3];
-		this.WAIT = probs[4];
 	}//end constructors
 	
-	public String getMax()
+	/**
+	 * Return set of actions that have the highest value.
+	 * @return best actions
+	 */
+	public List<String> getBestActions()
 	{
 		double bestValue = 0;
 		double[] actionValues = {N, E, S, W, WAIT};
@@ -72,8 +62,7 @@ public class StatePolicy
 				bestActions.add(actions[i]);
 			}
 		}
-		Random generator = new Random();
-		return bestActions.get(generator.nextInt(bestActions.size()));
+		return bestActions;
 	}
 	
 	@Override
@@ -87,10 +76,18 @@ public class StatePolicy
 		
 		StatePolicy statePolicy = (StatePolicy) obj;
 		
-		if( statePolicy.toString().equals(this.toString()))
+		if( statePolicy.N==this.N && statePolicy.E==this.E &&
+				statePolicy.S==this.S && statePolicy.W==this.W &&
+				statePolicy.WAIT==this.WAIT )
 			return true;
 		return false;
 	}
+	
+	@Override
+	public int hashCode()
+	{
+		return String.format("%f%f%f%f%f", N, E, S, W, WAIT).hashCode();
+	}	
 	
 	@Override
 	public String toString()

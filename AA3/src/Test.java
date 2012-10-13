@@ -1,3 +1,6 @@
+import java.util.Arrays;
+import java.util.List;
+
 
 /*
  * By:
@@ -9,10 +12,10 @@ public class Test
 
 	public static void main(String[] args) 
 	{
-		StateActionPair s1 = new StateActionPair(new State(1), "N");
-		StateActionPair s2 = new StateActionPair(new State(1), "N");
-		System.out.printf("%b\n", s1.equals(s2));
-		System.out.printf("%d\n%d\n", s1.hashCode(), s2.hashCode());
+		StatePolicy a = new StatePolicy();
+		StatePolicy b = new StatePolicy();
+		System.out.printf("%b\n", a.equals(b));
+		System.out.printf("%d\n%d\n", a.hashCode(), b.hashCode());
 	}
 	
 	/**
@@ -30,23 +33,55 @@ public class Test
 		}
 		return Math.sqrt(dev / timeList.length);
 	}
-
+	
 	/**
-	 * Copy a double array
-	 * @param a	A double array containing doubles.
-	 * @return	A copy of the given array 
+	 * Return the sum of the values in array 'a' and 'b'.
+	 * @param a array
+	 * @param b array
+	 * @return a+b
 	 */
-	public static double[][] copyArray(double[][] a)
+	public static int[] add(int[] a, int[] b)
 	{
-		double[][] clone = new double[a.length][a[0].length];
+		int[] c = new int[a.length];
 		for(int i=0; i<a.length; i++)
-		{
-			for(int j=0; j<a[i].length; j++)
-			{
-				clone[i][j] = a[i][j];
-			}
-		}
-		return clone;
+			c[i] = a[i]+b[i];
+		return c;
+	}
+	
+	/**
+	 * Return the values in array 'a' divided by 'd'.
+	 * @param a	array
+	 * @param d division factor
+	 * @return a/d
+	 */
+	public static double[] divide(int[] a, double d)
+	{
+		double[] b = new double[a.length];
+		for(int i=0; i<a.length; i++)
+			b[i] = ((double)a[i])/d;
+		return b;
+	}
+	
+	/**
+	 * Print an array
+	 * @param <E>
+	 * @param a array
+	 */
+	public static <E> void printArray(E[] a)
+	{
+		List<E> list = Arrays.asList(a);
+		System.out.println(list);
+	}
+	
+	/**
+	 * Print double array.
+	 * @param <E>	
+	 * @param a double array.
+	 */
+	public static <E> void printDoubleArray(E[][] a)
+	{
+		for(int i=0; i<a.length; i++)
+			printArray(a[i]);
 	}
 
 }//end class Test

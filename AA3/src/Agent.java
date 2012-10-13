@@ -1,4 +1,12 @@
-import java.awt.Point;
+/*
+ * By:
+ * Michael Cabot (6047262), Anna Keune (6056547), 
+ * Sander Nugteren (6042023) and Richard Rozeboom (6173292)
+ * 
+ * Agent has an index, state-action values (Q-values) and a policy.
+ * If index<0, then agent is a prey, else agent is a predator.
+ */
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,42 +16,25 @@ import java.util.Random;
 
 public class Agent 
 {
-	int index;	// index of agent in list of relative-distances
+	final int index;	// index of agent in list of relative-distances. index<0 indicates prey
 	Map<StateActionPair, Double> qValues;	// state-action values
+	Policy policy;
 	
 	//constructors
 	public Agent(Agent agent)
 	{
-		this(agent.index, agent.qValues);
+		this(agent.index, agent.qValues, agent.policy);
 	}
 	public Agent(int index)
 	{
-		this(index, new HashMap<StateActionPair, Double>());
+		this(index, new HashMap<StateActionPair, Double>(), new Policy());
 	}
-	public Agent(int index, Map<StateActionPair, Double> qValues)
+	public Agent(int index, Map<StateActionPair, Double> qValues, Policy policy)
 	{
 		this.index = index;
 		this.qValues = new HashMap<StateActionPair, Double>(qValues);
+		this.policy = new Policy(policy);
 	}//end constructors
-	
-	/**
-	 * Move the predator randomly.
-	 * @param environment
-	 */
-	public void doAction(State environment)
-	{
-		Random generator = new Random();
-		//find the positions around the prey
-		List<Point> validMoves = new ArrayList<Point>();
-		validMoves.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "N"));
-		validMoves.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "E"));
-		validMoves.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "S"));
-		validMoves.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "W"));
-		validMoves.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "WAIT"));
-		//move to a random position
-		environment.relativeDistance = validMoves.get(generator.nextInt(validMoves.size()));
-	}
-
 	
 	/**
 	 * Change the relative distance according to the action.
@@ -74,7 +65,7 @@ public class Agent
 		StateActionPair oldSap = new StateActionPair(oldState, action);
 		double oldQ = getStateActionValue(oldSap, initialValue);
 		
-		List<String> actions = getValidActions(state);
+		List<String> actions = getValidActions();
 		double bestQValue = 0;
 		for(int i=0; i<actions.size(); i++)
 		{
@@ -96,10 +87,10 @@ public class Agent
 	 * @return value of state action pair
 	 */
 	public double getStateActionValue(StateActionPair sap, double initialValue){
-		if( sap.state.relativeDistance.equals(new Point(0,0)) )
-			return 0;	// if prey is caught
-		return (stateActionValues.containsKey(sap))?
-				stateActionValues.get(sap):initialValue;
+		if( sap.state.confusion() || sap.state.preyCaught() )
+			return 0;	// if predators are confused or prey is caught
+		return (qValues.containsKey(sap))?
+				qValues.get(sap):initialValue;
 	}
 	
 	/**
@@ -115,7 +106,7 @@ public class Agent
 		Random generator = new Random();
 		String action;
 		// find best action
-		List<String> actions = getValidActions(state);
+		List<String> actions = getValidActions();
 		String bestAction = "";
 		double bestValue = 0;
 		for(int i=0; i<actions.size(); i++)
@@ -131,7 +122,7 @@ public class Agent
 		
 		if( generator.nextDouble() < epsilon )	//  choose random action
 		{
-			actions = getValidActions(state);
+			actions = getValidActions();
 			actions.remove(bestAction);	// don't choose the best action
 			action = actions.get(generator.nextInt(actions.size()));
 			return action;
@@ -139,30 +130,20 @@ public class Agent
 		return bestAction;	// choose best action
 	}
 	
-	/**
-	 * Returns list of neighbour positions.
-	 * @param environment
-	 * @param pos
-	 * @return neighbours
-	 */
-	public static List<Point> getNeighbours(State environment, Point pos)
+	/* TODO should policy return first best action or random best action?
+	 * 
+	 * public String policyAction(State state)
 	{
-		List<Point> neighbours = new ArrayList<Point>();
-		neighbours.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "N"));
-		neighbours.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "E"));
-		neighbours.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "S"));
-		neighbours.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "W"));
-		neighbours.add(environment.nextRelativeDistancePredator(environment.relativeDistance, "WAIT"));
-		
-		return neighbours;
-	}
+		return policy.getFirstBestAction(state);
+		return policy.getRandomBestAction(state);
+	}*/
 	
 	/**
-	 * Give list of valid actions.
+	 * Give list of possible actions.
 	 * @param environment
 	 * @return valid actions
 	 */
-	public List<String> getValidActions(State environment)
+	public List<String> getValidActions()
 	{
 		List<String> actions = new ArrayList<String>();
 		actions.add("N"); 

@@ -30,15 +30,15 @@ public class State
 		this.stateSize = new Point(11,11);
 		if( predatorAmount > 4 )
 		{
-			System.out.println("PredatorAmount cannot be larger than 4. PredatorAmount is now 4.");
+			System.out.println("PredatorAmount cannot be larger than 4. PredatorAmount is has been set to 4.");
 			predatorAmount = 4;
 		}
 		relativeDistances = new Point[predatorAmount];
-		Point[] maxPoints = {new Point(0,0), new Point(10,10), 
-				new Point(10,0), new Point(0,10)};
+		Point[] possiblePoints = {new Point(0,0), new Point(10,10), 
+				new Point(10,0), new Point(0,10)};	// array of possible initial predator relative distances
 		for(int i=0; i<predatorAmount; i++)
 		{
-			relativeDistances[i] = maxPoints[i];
+			relativeDistances[i] = possiblePoints[i];
 		}
 	}
 	public State(State state)
@@ -49,8 +49,7 @@ public class State
 	{
 		this.stateSize = new Point(stateSize);
 		this.relativeDistances = new Point[relativeDistances.length];
-		for(int i=0; i<relativeDistances.length; i++)
-			relativeDistances[i] = new Point(relativeDistances[i]);
+		System.arraycopy(relativeDistances, 0, this.relativeDistances, 0, relativeDistances.length);
 	}//end constructors
 
 	/**
@@ -81,34 +80,31 @@ public class State
 		return false;
 	}
 	
+	/**
+	 * Get the reward of prey or predator based on the state.
+	 * @param index of agent
+	 * @return reward of agent with given index
+	 */
 	public double getReward(int index)
-	{
+	{	
 		int reward;
 		if( confusion() )
 			reward = -10;
 		else if( preyCaught() )
 			reward = 10;
 		else
-			reward = 0;
+			return 0;	// no confusion and prey not caught
 		if( index < 0 )
-			return -1*reward;
+			return -1*reward;	// prey reward
 		else
-			return reward;
+			return reward;	// predator reward
 	}
 
 	/**
-	 * Return the next relative distance according to a move performed by the prey.
-	 * This is equal to moving the predator in the opposite direction.
-	 * @param relativeDistance between predator and agent
+	 * Return the next relative distances according to a move performed by the prey.
+	 * This is equal to moving all predators in the opposite direction.
 	 * @param action	action performed by prey
-	 * @return	new relative distance between predator and prey
-	 */
-	/*
-	 * TODO fix
-	 * change relative distances of all predators
-	 * output relativeDistance-array
-	 * input ""
-	 * intput action-array?
+	 * @return	new relative distances between predator and prey
 	 */
 	public Point[] nextRelativeDistancePrey(String action)
 	{
@@ -137,12 +133,6 @@ public class State
 	 * @param relativeDistance	between predator and agent
 	 * @param action	performed by predator
 	 * @return	new relative distance between predator and prey
-	 */
-	/*
-	 * TODO fix
-	 * output relativeDistance-array
-	 * input ""
-	 * intput action-array?
 	 */
 	public Point nextRelativeDistancePredator(Point relativeDistance, String action)
 	{
@@ -174,7 +164,7 @@ public class State
 	@Override
 	public String toString()
 	{
-		return String.format("StateSize%s\nRelativeDistances%s\n", 
+		return String.format("StateSize%s\nRelativeDistances%s", 
 				this.stateSize, Arrays.asList(this.relativeDistances));
 	}
 
@@ -198,22 +188,6 @@ public class State
 	public int hashCode()
 	{
 		return stateSize.hashCode() + Arrays.deepHashCode(relativeDistances);
-	}
-
-	/**
-	 * Prints a double array.
-	 * @param grid	A double array containing doubles.
-	 */
-	public static void printArray(double[][] grid)
-	{
-		for (int i =0; i < grid.length; i++) 
-		{
-			for (int j = 0; j < grid[i].length; j++) 
-			{
-				System.out.printf("%.2f\t ", grid[i][j]);
-			}
-			System.out.println("");
-		}
 	}
 
 }//end class State

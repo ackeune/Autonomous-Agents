@@ -3,61 +3,77 @@
  * Michael Cabot (6047262), Anna Keune (6056547), 
  * Sander Nugteren (6042023) and Richard Rozeboom (6173292)
  * 
- * Policy contains a grid of StatePolicy where each StatePolicy
- * denotes the actions that should be performed at each position 
- * on the grid.
+ * Policy contains a map of StatePolicy where each StatePolicy
+ * denotes the actions that should be performed in each state.
  */
 
-import java.awt.Point;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 
 public class Policy 
 {
-	StatePolicy[][] policyGrid;
+	Map<State, StatePolicy> policies;
 	
 	// constructors
+	public Policy()
+	{
+		this.policies = new HashMap<State, StatePolicy>();
+	}
 	public Policy(Policy policy)
 	{
-		this.policyGrid = new StatePolicy[policy.policyGrid.length]
-		                                  [policy.policyGrid[0].length];
-		for(int i=0; i<policy.policyGrid.length; i++)
-		{
-			for(int j=0; j<policy.policyGrid[i].length; j++)
-			{
-				this.policyGrid[i][j] = new StatePolicy(policy.getStatePolicy(new Point(i,j)));
-			}
-		}
+		this(policy.policies);
 	}
-	public Policy(Point stateSize)
+	public Policy(Map<State, StatePolicy> policies)
 	{
-		this.policyGrid = new StatePolicy[stateSize.x][stateSize.y];
-		for(int i=0; i<stateSize.x; i++)
-		{
-			for(int j=0; j<stateSize.y; j++)
-			{
-				policyGrid[i][j] = new StatePolicy();
-			}
-		}
+		this.policies = new HashMap<State, StatePolicy>(policies);
 	}//end constructors
 	
 	/**
-	 * Set a StatePolicy
-	 * @param point
+	 * Set a StatePolicy. A state policy belonging to the given 
+	 * state will be replaces with the new state policy.
+	 * @param state
 	 * @param statePolicy
 	 */
-	public void setStatePolicy(Point point, StatePolicy statePolicy)
+	public void setStatePolicy(State state, StatePolicy statePolicy)
 	{
-		policyGrid[point.x][point.y] = statePolicy;
+		policies.put(state, statePolicy);
 	}
 	
 	/**
-	 * Get a StatePolicy
-	 * @param point
+	 * Get a StatePolicy for given state. If no state policy is found
+	 * then return a random state policy.
+	 * @param state
 	 * @return StatePolicy
 	 */
-	public StatePolicy getStatePolicy(Point point)
+	public StatePolicy getStatePolicy(State state)
 	{
-		return policyGrid[point.x][point.y];
+		return policies.containsKey(state)?policies.get(state):new StatePolicy();
+	}
+	
+	/**
+	 * Return the first of the set of best actions.
+	 * @param state
+	 * @return first best action
+	 */
+	public String getFirstBestAction(State state)
+	{
+		List<String> bestActions = getStatePolicy(state).getBestActions();
+		return bestActions.get(0);
+	}
+	
+	/**
+	 * Return at random an action from the set of best actions.
+	 * @param state
+	 * @return random best action
+	 */
+	public String getRandomBestAction(State state)
+	{
+		List<String> bestActions = getStatePolicy(state).getBestActions();
+		Random generator = new Random();
+		return bestActions.get(generator.nextInt(bestActions.size()));
 	}
 	
 	@Override 
@@ -70,7 +86,7 @@ public class Policy
 			return false;
 		
 		Policy policy = (Policy) obj;
-		if( policy.toString().equals(this.toString()) )
+		if( policy.policies.equals(this.policies) )
 			return true;
 		return false;
 	}
@@ -78,23 +94,7 @@ public class Policy
 	@Override
 	public int hashCode()
 	{
-		return this.toString().hashCode();
-	}
-	
-	@Override
-	public String toString()
-	{
-		String s = "";
-		for(int i=0; i<policyGrid.length; i++)
-		{
-			for(int j=0; j<policyGrid[i].length; j++)
-			{
-				s += String.format("%s\t ", policyGrid[i][j].toString());
-			}
-			s += "\n";
-		}
-		return s;
-	}
-	
+		return this.policies.hashCode();
+	}	
 	
 }//end class Policy
