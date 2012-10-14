@@ -12,24 +12,64 @@ public class Test
 
 	public static void main(String[] args) 
 	{
-		StatePolicy a = new StatePolicy();
-		StatePolicy b = new StatePolicy();
-		System.out.printf("%b\n", a.equals(b));
-		System.out.printf("%d\n%d\n", a.hashCode(), b.hashCode());
+		System.out.println("Ex1 - simulations with random policies");
+		int predatorAmount = 1;
+		Environment env1 = new Environment(predatorAmount);
+		int episodes = 100;
+		double tripProb = 0.2;
+		int[] episodeLengths1 = env1.randomSimulations(episodes, tripProb);
+		double mean = mean(episodeLengths1);
+		double dev = standardDeviation(episodeLengths1, mean);
+		System.out.printf("Mean:%f\nStandard deviation:%f\n", mean, dev);
+		
+		System.out.println("\nEx2 - Independent Q-learning");
+		predatorAmount = 1;
+		Environment env2 = new Environment(predatorAmount);
+		double initialValue = 15;
+		episodes = 100;
+		double alpha = 0.5;
+		double gamma = 0.9;
+		double epsilon = 0.1;
+		tripProb = 0.2;
+		int[] episodeLengths2 = new int[episodes];
+		int runs = 100;
+		for(int r=0; r<runs; r++)
+		{
+			episodeLengths2 = add(episodeLengths2, env2.independentQLearningEGreedy(initialValue, 
+					episodes, alpha, gamma, epsilon, tripProb));
+		}
+		if( runs > 0 )
+		{
+			double[] averageEpisodeLenghts2 = divide(episodeLengths2, runs);
+			printArray(averageEpisodeLenghts2);
+		}
+	}//end main
+	
+	/**
+	 * Calculate the mean of a set of times.
+	 * @param timeList 	list of episode lengths
+	 * @return mean of episode lengths
+	 */
+	public static double mean(int[] timeList)
+	{
+		double sum = 0;
+		for(int i=0; i<timeList.length; i++)
+			sum += timeList[i];
+		return sum / timeList.length;
 	}
 	
 	/**
 	 * Calculate the standard deviation of a set of times.
-	 * @param timeList	a list of time values
+	 * @param timeList	a list of episode lengths
 	 * @param mean		the mean of timeList
-	 * @return standard deviation
+	 * @return standard deviation of episode lengths
 	 */
-	public static double standardDeviation(double[] timeList, double mean)
+	public static double standardDeviation(int[] timeList, double mean)
 	{
 		double dev = 0;
 		for(int i=0; i<timeList.length; i++)
 		{
-			dev += Math.pow(timeList[i]- mean,2);
+			dev += Math.pow(((double)timeList[i]) - mean,2);
 		}
 		return Math.sqrt(dev / timeList.length);
 	}
@@ -71,6 +111,18 @@ public class Test
 	{
 		List<E> list = Arrays.asList(a);
 		System.out.println(list);
+	}
+	
+	public static void printArray(int[] a)
+	{
+		for(int i=0; i<a.length; i++)
+			System.out.printf("%d ", a[i]);
+	}
+	
+	public static void printArray(double[] a)
+	{
+		for(int i=0; i<a.length; i++)
+			System.out.printf("%f ", a[i]);
 	}
 	
 	/**

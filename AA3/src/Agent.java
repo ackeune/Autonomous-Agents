@@ -139,8 +139,17 @@ public class Agent
 	}*/
 	
 	/**
+	 * Return a random action.
+	 * @return random action.
+	 */
+	public String randomAction()
+	{
+		List<String> actions = getValidActions();
+		return actions.get(new Random().nextInt(actions.size()));
+	}
+	
+	/**
 	 * Give list of possible actions.
-	 * @param environment
 	 * @return valid actions
 	 */
 	public List<String> getValidActions()
@@ -173,6 +182,12 @@ public class Agent
 	public int hashCode()
 	{
 		return qValues.hashCode();
+	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format("Index:%d", index);
 	}
 
 }

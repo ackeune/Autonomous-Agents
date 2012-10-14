@@ -34,8 +34,8 @@ public class State
 			predatorAmount = 4;
 		}
 		relativeDistances = new Point[predatorAmount];
-		Point[] possiblePoints = {new Point(0,0), new Point(10,10), 
-				new Point(10,0), new Point(0,10)};	// array of possible initial predator relative distances
+		Point[] possiblePoints = {new Point(-5,-5), new Point(5,5), 
+				new Point(5,-5), new Point(-5,5)};	// array of possible initial predator relative distances
 		for(int i=0; i<predatorAmount; i++)
 		{
 			relativeDistances[i] = possiblePoints[i];
@@ -67,7 +67,7 @@ public class State
 	
 	/**
 	 * Checks whether there is confusion, i.e. 2 or more predators occupy the same position.
-	 * @return true if at least 2 predators have the same relative distance.
+	 * @return true if at least 2 predators have the same relative distance to the prey.
 	 */
 	public boolean confusion()
 	{
