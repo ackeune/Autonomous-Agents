@@ -76,11 +76,12 @@ public class Environment
 	 * @param tripProb		probability that prey trips, causing it to remain at the same position. 
 	 * @return	episode lengths
 	 */
-	public int[] independentQLearningEGreedy(double initialValue, int episodes, double alpha, double gamma, double epsilon, double tripProb)
+	public int[][] independentQLearningEGreedy(double initialValue, int episodes, double alpha, double gamma, double epsilon, double tripProb)
 	{	
 		Random generator = new Random();
 		
 		int[] episodeLengths = new int[episodes];
+		int[] episodeEndings = new int[episodes];
 		for(int e=0; e<episodes; e++)
 		{
 			state = new State(state.relativeDistances.length);
@@ -102,18 +103,21 @@ public class Environment
 				if( generator.nextDouble() < 1-tripProb )
 					prey.moveAccordingToAction(actionPrey, state);
 				// agents update Q-values
+				
 				for(int p=0; p<predators.length; p++) // update Q-values predators
 				{					
 					predators[p].updateQValue(oldState, state, actions[p], alpha, gamma, initialValue);
 				}	
 				prey.updateQValue(oldState, state, actionPrey, alpha, gamma, initialValue);	// update Q-values prey
 			}//end hunting prey			
-			episodeLengths[e] = counter;			
-		}//end episodes
-		//predators[0].printQValues(initialValue, state.stateSize);	// TODO remove
-		
-		return episodeLengths;
-	}
+			episodeLengths[e] = counter;
+			episodeEndings[e] = state.confusion()?0:1; // 0 if confusion, 1 if prey caught
+		}//end episodes		
+		int[][] info = new int[episodeLengths.length][episodeEndings.length];
+		info[0] = episodeLengths;
+		info[1] = episodeEndings;
+		return info;
+	}//end independentQLearningEGreedy
 	
 	@Override
 	public String toString()

@@ -1,3 +1,6 @@
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,25 +28,42 @@ public class Test
 		System.out.println("\nEx2 - Independent Q-learning");
 		predatorAmount = 1;
 		double initialValue = 15;
-		episodes = 100;
+		episodes = 200;
 		double alpha = 0.5;
 		double gamma = 0.9;
-		double epsilon = 0.1;
-		tripProb = 0.2;	//TODO set to 0.2
+		double epsilon = 0.1; 
+		tripProb = 0.2;	
 		int[] episodeLengths2 = new int[episodes];
+		int[] episodeEndings2 = new int[episodes];
 		int runs = 100;
 		for(int r=0; r<runs; r++)
 		{
 			Environment env2 = new Environment(predatorAmount);
-			int[] tempEpisodeLengths = env2.independentQLearningEGreedy(initialValue, 
+			int[][] info = env2.independentQLearningEGreedy(initialValue, 
 					episodes, alpha, gamma, epsilon, tripProb);
+			int[] tempEpisodeLengths = info[0];
+			int[] tempEpisodeEndings = info[1];
 			episodeLengths2 = add(episodeLengths2, tempEpisodeLengths);
+			episodeEndings2 = add(episodeEndings2, tempEpisodeEndings);
 		}
 		if( runs > 0 )
 		{
 			double[] averageEpisodeLenghts2 = divide(episodeLengths2, runs);
 			printArray(averageEpisodeLenghts2);
-			System.out.printf("\nMean:%f\n", mean(averageEpisodeLenghts2));
+			System.out.println();
+			double[] averageEpisodeEndings2 = divide(episodeEndings2, runs);
+			printArray(averageEpisodeEndings2);
+			System.out.printf("\nMean length:%f\n", mean(averageEpisodeLenghts2));
+			System.out.printf("Mean endings:%f\n", mean(averageEpisodeEndings2));
+			
+			// print to file
+			double[][] toPrint = 
+				new double[averageEpisodeLenghts2.length][averageEpisodeEndings2.length];
+			toPrint[0] = averageEpisodeLenghts2;
+			toPrint[1] = averageEpisodeEndings2;
+			String fileName = String.format("IQL_Preds%dAlpha%.1fGamma%.1fEpsilon%.1f.txt", 
+					predatorAmount, alpha, gamma, epsilon);
+			printToFile(fileName, toPrint);
 		}
 	}//end main
 	
@@ -112,6 +132,20 @@ public class Test
 	}
 	
 	/**
+	 * Return values in array 'a' multiplied by values in 'b'
+	 * @param a
+	 * @param b
+	 * @return a*b
+	 */
+	public static double[] times(double[] a, double[] b)
+	{
+		double[] c = new double[a.length];
+		for(int i=0; i<a.length; i++)
+			c[i] = a[i] * b[i];
+		return c;
+	}
+	
+	/**
 	 * Print an array
 	 * @param <E>
 	 * @param a array
@@ -134,6 +168,15 @@ public class Test
 			System.out.printf("%f ", a[i]);
 	}
 	
+	public static String arrayToString(double[] a)
+	{
+		String s = "";
+		for(int i=0; i<a.length; i++)
+			s += String.format("%f ", a[i]);
+		s = s.replaceAll(",", ".");
+		return s;
+	}
+	
 	/**
 	 * Print double array.
 	 * @param <E>	
@@ -143,6 +186,18 @@ public class Test
 	{
 		for(int i=0; i<a.length; i++)
 			printArray(a[i]);
+	}
+	
+	public static void printToFile(String fileName, double[][] a)
+	{
+		try {
+			PrintWriter out = new PrintWriter(new FileWriter(fileName));
+			for(int i=0; i<a.length; i++)
+				out.println(arrayToString(a[i]));
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }//end class Test
