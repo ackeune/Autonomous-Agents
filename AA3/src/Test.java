@@ -24,24 +24,26 @@ public class Test
 		
 		System.out.println("\nEx2 - Independent Q-learning");
 		predatorAmount = 1;
-		Environment env2 = new Environment(predatorAmount);
 		double initialValue = 15;
 		episodes = 100;
 		double alpha = 0.5;
 		double gamma = 0.9;
 		double epsilon = 0.1;
-		tripProb = 0.2;
+		tripProb = 0.2;	//TODO set to 0.2
 		int[] episodeLengths2 = new int[episodes];
 		int runs = 100;
 		for(int r=0; r<runs; r++)
 		{
-			episodeLengths2 = add(episodeLengths2, env2.independentQLearningEGreedy(initialValue, 
-					episodes, alpha, gamma, epsilon, tripProb));
+			Environment env2 = new Environment(predatorAmount);
+			int[] tempEpisodeLengths = env2.independentQLearningEGreedy(initialValue, 
+					episodes, alpha, gamma, epsilon, tripProb);
+			episodeLengths2 = add(episodeLengths2, tempEpisodeLengths);
 		}
 		if( runs > 0 )
 		{
 			double[] averageEpisodeLenghts2 = divide(episodeLengths2, runs);
 			printArray(averageEpisodeLenghts2);
+			System.out.printf("\nMean:%f\n", mean(averageEpisodeLenghts2));
 		}
 	}//end main
 	
@@ -51,6 +53,13 @@ public class Test
 	 * @return mean of episode lengths
 	 */
 	public static double mean(int[] timeList)
+	{
+		double sum = 0;
+		for(int i=0; i<timeList.length; i++)
+			sum += timeList[i];
+		return sum / timeList.length;
+	}
+	public static double mean(double[] timeList)
 	{
 		double sum = 0;
 		for(int i=0; i<timeList.length; i++)

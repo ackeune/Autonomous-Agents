@@ -107,9 +107,11 @@ public class Environment
 					predators[p].updateQValue(oldState, state, actions[p], alpha, gamma, initialValue);
 				}	
 				prey.updateQValue(oldState, state, actionPrey, alpha, gamma, initialValue);	// update Q-values prey
-			}//end hunting prey
+			}//end hunting prey			
 			episodeLengths[e] = counter;			
 		}//end episodes
+		//predators[0].printQValues(initialValue, state.stateSize);	// TODO remove
+		
 		return episodeLengths;
 	}
 	
