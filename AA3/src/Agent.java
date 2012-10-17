@@ -63,7 +63,11 @@ public class Agent
 	public void updateQValue(State oldState, State state, String action, double alpha,
 			double gamma, double initialValue)
 	{
+		//StateActionPair testSap = new StateActionPair(new State(state.relativeDistances.length), "N");
+		
 		StateActionPair oldSap = new StateActionPair(oldState, action);
+		/*if( oldSap.equals(testSap) && this.index == -1 && this.qValues.size() > 605 )
+			System.out.println();*/
 		double oldQ = getStateActionValue(oldSap, initialValue);
 		
 		List<String> actions = getValidActions();

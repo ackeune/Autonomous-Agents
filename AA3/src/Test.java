@@ -15,29 +15,34 @@ public class Test
 
 	public static void main(String[] args) 
 	{
-		System.out.println("Ex1 - simulations with random policies");
-		int predatorAmount = 1;
-		Environment env1 = new Environment(predatorAmount);
-		int episodes = 100;
-		double tripProb = 0.2;
-		int[] episodeLengths1 = env1.randomSimulations(episodes, tripProb);
-		double mean = mean(episodeLengths1);
-		double dev = standardDeviation(episodeLengths1, mean);
-		System.out.printf("Mean:%f\nStandard deviation:%f\n", mean, dev);
+		boolean randomSimulation = false;
+		if( randomSimulation )
+		{
+			System.out.println("Ex1 - simulations with random policies");
+			int predatorAmount = 1;
+			Environment env1 = new Environment(predatorAmount);
+			int episodes = 100;
+			double tripProb = 0.2;
+			int[] episodeLengths1 = env1.randomSimulations(episodes, tripProb);
+			double mean = mean(episodeLengths1);
+			double dev = standardDeviation(episodeLengths1, mean);
+			System.out.printf("Mean:%f\nStandard deviation:%f\n", mean, dev);
+		}
 		
 		System.out.println("\nEx2 - Independent Q-learning");
-		predatorAmount = 1;
+		int predatorAmount = 1;
 		double initialValue = 15;
-		episodes = 200;
+		int episodes = 200;
 		double alpha = 0.5;
 		double gamma = 0.9;
 		double epsilon = 0.1; 
-		tripProb = 0.2;	
+		double tripProb = 0.2;	
 		int[] episodeLengths2 = new int[episodes];
 		int[] episodeEndings2 = new int[episodes];
 		int runs = 100;
 		for(int r=0; r<runs; r++)
 		{
+			System.out.printf("Run: %d\n", r);
 			Environment env2 = new Environment(predatorAmount);
 			int[][] info = env2.independentQLearningEGreedy(initialValue, 
 					episodes, alpha, gamma, epsilon, tripProb);
@@ -48,18 +53,18 @@ public class Test
 		}
 		if( runs > 0 )
 		{
-			double[] averageEpisodeLenghts2 = divide(episodeLengths2, runs);
-			printArray(averageEpisodeLenghts2);
-			System.out.println();
+			double[] averageEpisodeLengths2 = divide(episodeLengths2, runs);
+			//printArray(averageEpisodeLengths2);
+			//System.out.println();
 			double[] averageEpisodeEndings2 = divide(episodeEndings2, runs);
-			printArray(averageEpisodeEndings2);
-			System.out.printf("\nMean length:%f\n", mean(averageEpisodeLenghts2));
-			System.out.printf("Mean endings:%f\n", mean(averageEpisodeEndings2));
+			//printArray(averageEpisodeEndings2);
+			//System.out.printf("\nMean length:%f\n", mean(averageEpisodeLengths2));
+			//System.out.printf("Mean endings:%f\n", mean(averageEpisodeEndings2));
 			
 			// print to file
 			double[][] toPrint = 
-				new double[averageEpisodeLenghts2.length][averageEpisodeEndings2.length];
-			toPrint[0] = averageEpisodeLenghts2;
+				new double[2][averageEpisodeLengths2.length];
+			toPrint[0] = averageEpisodeLengths2;
 			toPrint[1] = averageEpisodeEndings2;
 			String fileName = String.format("IQL_Preds%dAlpha%.1fGamma%.1fEpsilon%.1f.txt", 
 					predatorAmount, alpha, gamma, epsilon);
