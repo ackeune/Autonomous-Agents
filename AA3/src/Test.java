@@ -15,7 +15,7 @@ public class Test
 
 	public static void main(String[] args) 
 	{
-		boolean randomSimulation = false;
+		boolean randomSimulation = true;
 		if( randomSimulation )
 		{
 			System.out.println("Ex1 - simulations with random policies");
@@ -39,7 +39,7 @@ public class Test
 		double tripProb = 0.2;	
 		int[] episodeLengths2 = new int[episodes];
 		int[] episodeEndings2 = new int[episodes];
-		int runs = 100;
+		int runs = 1;
 		for(int r=0; r<runs; r++)
 		{
 			System.out.printf("Run: %d\n", r);
@@ -54,12 +54,12 @@ public class Test
 		if( runs > 0 )
 		{
 			double[] averageEpisodeLengths2 = divide(episodeLengths2, runs);
-			//printArray(averageEpisodeLengths2);
-			//System.out.println();
+			printArray(averageEpisodeLengths2);
+			System.out.println();
 			double[] averageEpisodeEndings2 = divide(episodeEndings2, runs);
-			//printArray(averageEpisodeEndings2);
-			//System.out.printf("\nMean length:%f\n", mean(averageEpisodeLengths2));
-			//System.out.printf("Mean endings:%f\n", mean(averageEpisodeEndings2));
+			printArray(averageEpisodeEndings2);
+			System.out.printf("\nMean length:%f\n", mean(averageEpisodeLengths2));
+			System.out.printf("Mean endings:%f\n", mean(averageEpisodeEndings2));
 			
 			// print to file
 			double[][] toPrint = 

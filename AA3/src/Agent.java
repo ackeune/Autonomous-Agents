@@ -7,7 +7,6 @@
  * If index<0, then agent is a prey, else agent is a predator.
  */
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,19 +35,6 @@ public class Agent
 		this.qValues = new HashMap<StateActionPair, Double>(qValues);
 		this.policy = new Policy(policy);
 	}//end constructors
-	
-	/**
-	 * Change the relative distance according to the action.
-	 * @param action
-	 * @param environment
-	 */
-	public void moveAccordingToAction(String action, State state)
-	{
-		if( index<0 )
-			state.relativeDistances = state.nextRelativeDistancePrey(action);
-		else
-			state.relativeDistances[index] = state.nextRelativeDistancePredator(state.relativeDistances[index], action);
-	}
 	
 	/**
 	 * Update the q-value
@@ -194,29 +180,5 @@ public class Agent
 	{
 		return String.format("Index:%d", index);
 	}
-	
-	//TODO remove
-	public void printQValues(double initialValue, Point stateSize)
-	{
-		String[] actions = {"N", "E", "S", "W", "WAIT"};
-		for(int x=-stateSize.x/2; x<stateSize.x/2+1; x++)
-		{
-			for(int y=-stateSize.y/2; y<stateSize.y/2+1; y++)
-			{
-				String string = "";
-				for(int a=0; a<actions.length; a++)
-				{
-					Point[] relDist = {new Point(x,y)};
-					State tempState = new State(relDist, stateSize);
-					StateActionPair sap = 
-						new StateActionPair(tempState, actions[a]);
-					double value = getStateActionValue(sap, initialValue);
-					string += String.format("%.2f|", value);
-				}
-				System.out.printf("%s\t", string);
-			}
-			System.out.println();
-		}
-	}
 
-}
+}//end class Agent

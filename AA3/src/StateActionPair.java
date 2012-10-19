@@ -11,7 +11,7 @@ public class StateActionPair
 	}
 	public StateActionPair(State state, String action)
 	{
-		this.state = new State(state);
+		this.state = state.clone();
 		this.action = new String(action);
 	}//end constructors
 	

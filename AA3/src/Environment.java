@@ -17,7 +17,7 @@ public class Environment
 	// constructors
 	public Environment(int predatorAmount)
 	{
-		this.state = new State(predatorAmount);
+		this.state = new RelativeState(predatorAmount);	// choose state representation
 		if( predatorAmount > 4 )
 		{
 			System.out.println("PredatorAmount cannot be larger than 4. PredatorAmount is has been set to 4.");
@@ -34,7 +34,7 @@ public class Environment
 	}
 	public Environment(State state, Agent[] predators, Agent prey)
 	{
-		this.state = new State(state);
+		this.state = state.clone();
 		this.predators = new Agent[predators.length];
 		System.arraycopy(predators, 0, this.predators, 0, predators.length);
 		this.prey = new Agent(prey);
@@ -47,7 +47,7 @@ public class Environment
 		int[] episodeLengths = new int[episodes];
 		for(int e=0; e<episodes; e++)
 		{
-			state = new State(state.relativeDistances.length);
+			resetEpisode();
 			int counter = 0;
 			while( !state.confusion() && !state.preyCaught() )
 			{
@@ -55,11 +55,11 @@ public class Environment
 				for(int p=0; p<predators.length; p++)
 				{
 					String actionPredator = predators[p].randomAction();
-					predators[p].moveAccordingToAction(actionPredator, state);
+					state.moveAccordingToAction(actionPredator, p);
 				}
 				String actionPrey = prey.randomAction();
 				if( generator.nextDouble() < 1-tripProb )
-					prey.moveAccordingToAction(actionPrey, state);
+					state.moveAccordingToAction(actionPrey, -1);
 			}//end hunting prey
 			episodeLengths[e] = counter;	
 		}
@@ -89,7 +89,7 @@ public class Environment
 			while( !state.confusion() && !state.preyCaught() )
 			{
 				counter++;
-				State oldState = new State(state);
+				State oldState = state.clone();
 				String[] actions = new String[predators.length];
 				// agents choose and take actions derived from Q
 				for(int p=0; p<predators.length; p++) // predators choose and take actions derived from Q
@@ -97,11 +97,11 @@ public class Environment
 					
 					String action = predators[p].eGreedyAction(state, epsilon, initialValue);
 					actions[p] = action;
-					predators[p].moveAccordingToAction(action, state);
+					state.moveAccordingToAction(action, p);
 				}
 				String actionPrey = prey.eGreedyAction(state, epsilon, initialValue);	// prey chooses action 
 				if( generator.nextDouble() < 1-tripProb )
-					prey.moveAccordingToAction(actionPrey, state);
+					state.moveAccordingToAction(actionPrey, -1);
 				
 				// agents update Q-values
 				for(int p=0; p<predators.length; p++) // update Q-values predators
@@ -126,7 +126,7 @@ public class Environment
 	 */
 	public void resetEpisode()
 	{
-		state = new State(state.relativeDistances.length);
+		state = state.clone();
 	}
 	
 	@Override
