@@ -28,18 +28,8 @@ public class RelativeState implements State
 	public RelativeState(int predatorAmount)
 	{
 		this.stateSize = new Point(11,11);
-		if( predatorAmount > 4 )
-		{
-			System.out.println("PredatorAmount cannot be larger than 4. PredatorAmount is has been set to 4.");
-			predatorAmount = 4;
-		}
-		relativeDistances = new Point[predatorAmount];
-		Point[] possiblePoints = {new Point(-5,-5), new Point(5,5), 
-				new Point(5,-5), new Point(-5,5)};	// array of possible initial predator relative distances
-		for(int i=0; i<predatorAmount; i++)
-		{
-			relativeDistances[i] = possiblePoints[i];
-		}
+		this.relativeDistances = new Point[predatorAmount];
+		initializeState(getPredatorAmount());
 	}
 	public RelativeState(RelativeState state)
 	{
@@ -188,7 +178,8 @@ public class RelativeState implements State
 	 */
 	public State clone()
 	{
-		return new RelativeState(getPredatorAmount());
+		return new RelativeState(this);
+		//return new RelativeState(getPredatorAmount());
 	}
 
 	@Override
@@ -218,6 +209,28 @@ public class RelativeState implements State
 	public int hashCode()
 	{
 		return stateSize.hashCode() + Arrays.deepHashCode(relativeDistances);
+	}
+	
+	private void initializeState(int predatorAmount)
+	{
+		this.stateSize = new Point(11,11);
+		if( predatorAmount > 4 )
+		{
+			System.out.println("PredatorAmount cannot be larger than 4. PredatorAmount is has been set to 4.");
+			predatorAmount = 4;
+		}
+		relativeDistances = new Point[predatorAmount];
+		Point[] possiblePoints = {new Point(-5,-5), new Point(5,5), 
+				new Point(5,-5), new Point(-5,5)};	// array of possible initial predator relative distances
+		for(int i=0; i<predatorAmount; i++)
+		{
+			relativeDistances[i] = possiblePoints[i];
+		}
+	}
+	
+	public void reset() 
+	{
+		initializeState(getPredatorAmount());
 	}
 
 }//end class RelativeState

@@ -55,6 +55,11 @@ public interface State
 	 */
 	public State clone();
 	
+	/**
+	 * Reset the positions of the agents.
+	 */
+	public void reset();
+	
 	@Override
 	public String toString();
 
