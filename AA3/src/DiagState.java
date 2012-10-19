@@ -1,4 +1,5 @@
 import java.awt.Point;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -100,8 +101,35 @@ public class DiagState implements State
 	
 	public String relDistToArea(Point pos)
 	{
-		
-	}
+		if( pos.x==pos.y )	// on diagonal
+		{
+			if( pos.x<0 && pos.y<0 )
+				return "NW";
+			else if( pos.x>0 && pos.y>0 )
+				return "SE";
+			else if( pos.x>0 && pos.y<0 )
+				return "SW";
+			else if( pos.x<0 && pos.y>0 )
+				return "NE";
+			else
+				return "X";	// on prey
+		}else
+		{
+			if( Math.abs(pos.x) < Math.abs(pos.y) )	// above or below
+			{
+				if( pos.x<0 )
+					return "N";
+				else
+					return "S";
+			}else	// left or right
+			{
+				if( pos.y<0 )
+					return "W";
+				else
+					return "E";
+			}
+		}
+	}//end relDistToArea
 
 	/**
 	 * Return the next relative distances according to a move performed by the prey.
@@ -164,21 +192,29 @@ public class DiagState implements State
 		return newRelativeDistance;
 	}
 
-	@Override
-	public int getPredatorAmount() {
-		// TODO Auto-generated method stub
-		return 0;
+	/**
+	 * Return the amount of predators.
+	 * @return predator amount
+	 */
+	public int getPredatorAmount()
+	{
+		return relativeDistances.length;
 	}
 	
+	/**
+	 * Return a clone of this state.
+	 */
 	public State clone()
 	{
-		//TODO
+		return new DiagState(getPredatorAmount());
 	}
 
 	@Override
 	public String toString()
 	{
-		//TODO
+		return String.format("StateSize%s\nRelativeDistances%s\nAreas%s", 
+				this.stateSize, Arrays.asList(this.relativeDistances), 
+				Arrays.asList(this.areas));
 	}
 
 	@Override
@@ -190,18 +226,17 @@ public class DiagState implements State
 			return false;
 
 		DiagState state = (DiagState) o;
-
-		//TODO
-		/*if( state.stateSize.equals(this.stateSize) && 
-				Arrays.deepEquals(state.relativeDistances, this.relativeDistances) )
+		// equal when state size is equal and when predators are in the same areas
+		if( state.stateSize.equals(this.stateSize) && 
+				Arrays.deepEquals(state.areas, this.areas) ) 
 			return true;
-		return false;*/
+		return false;
 	}
 	
 	@Override
 	public int hashCode()
 	{
-		//TODO
+		return stateSize.hashCode() + Arrays.deepHashCode(areas);
 	}
 
 }

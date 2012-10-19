@@ -183,6 +183,9 @@ public class RelativeState implements State
 		return relativeDistances.length;
 	}
 	
+	/**
+	 * Return a clone of this state.
+	 */
 	public State clone()
 	{
 		return new RelativeState(getPredatorAmount());
