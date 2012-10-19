@@ -15,9 +15,12 @@ public class Environment
 	Agent prey;
 	
 	// constructors
-	public Environment(int predatorAmount)
+	public Environment(int predatorAmount, String stateType)
 	{
-		this.state = new DiagState(predatorAmount);	// choose state representation
+		if( stateType.equals("RelativeState") ) // choose state representation
+			this.state = new RelativeState(predatorAmount);
+		else
+			this.state = new DiagState(predatorAmount);	
 		if( predatorAmount > 4 )
 		{
 			System.out.println("PredatorAmount cannot be larger than 4. PredatorAmount is has been set to 4.");
@@ -47,7 +50,7 @@ public class Environment
 		int[] episodeLengths = new int[episodes];
 		for(int e=0; e<episodes; e++)
 		{
-			resetEpisode();
+			state.reset();
 			int counter = 0;
 			while( !state.confusion() && !state.preyCaught() )
 			{
@@ -84,7 +87,7 @@ public class Environment
 		int[] episodeEndings = new int[episodes];
 		for(int e=0; e<episodes; e++)
 		{
-			resetEpisode();
+			state.reset();
 			int counter = 0;
 			while( !state.confusion() && !state.preyCaught() )
 			{
@@ -115,20 +118,59 @@ public class Environment
 			episodeLengths[e] = counter;
 			episodeEndings[e] = state.confusion()?0:1; // 0 if confusion, 1 if prey caught
 		}//end episodes		
-		System.out.println(predators[0].qValues.size());
+		//System.out.println(predators[0].qValues.size());
 		int[][] info = new int[2][episodeLengths.length];
 		info[0] = episodeLengths;
 		info[1] = episodeEndings;
 		return info;
 	}//end independentQLearningEGreedy
 	
+	public int[][] hiveMindQLearningEGreedy(double initialValue, int episodes, double alpha, double gamma, double epsilon, double tripProb)
+	{	
+		Random generator = new Random();
+		HiveMind hiveMind = new HiveMind(state.getPredatorAmount());
+		
+		int[] episodeLengths = new int[episodes];
+		int[] episodeEndings = new int[episodes];
+		for(int e=0; e<episodes; e++)
+		{
+			state.reset();
+			int counter = 0;
+			while( !state.confusion() && !state.preyCaught() )
+			{
+				counter++;
+				State oldState = state.clone();
+				// agents choose and take actions derived from Q
+				String[] actionList = hiveMind.eGreedyActionList(state, epsilon, initialValue);
+				for(int p=0; p<actionList.length; p++) // predators choose and take actions derived from Q
+				{
+					state.moveAccordingToAction(actionList[p], p);
+				}
+				String actionPrey = prey.eGreedyAction(state, epsilon, initialValue);	// prey chooses action 
+				if( generator.nextDouble() < 1-tripProb )
+					state.moveAccordingToAction(actionPrey, -1);
+				
+				// agents update Q-values
+				hiveMind.updateQValue(oldState, state, actionList, alpha, gamma, initialValue); // update Q-values hive mind
+				prey.updateQValue(oldState, state, actionPrey, alpha, gamma, initialValue);	// update Q-values prey
+			
+			}//end hunting prey
+			episodeLengths[e] = counter;
+			episodeEndings[e] = state.confusion()?0:1; // 0 if confusion, 1 if prey caught
+		}//end episodes		
+		int[][] info = new int[2][episodeLengths.length];
+		info[0] = episodeLengths;
+		info[1] = episodeEndings;
+		return info;
+	}//end hiveMindQLearningEGreedy
+	
 	/**
-	 * Reset the positions of the agents, but do NOT reset the knowledge of the agents.
+	 * Return the class name of the state space being used.
+	 * @return state class name
 	 */
-	public void resetEpisode()
+	public String getStateName()
 	{
-		state = state.clone();
-		state.reset();
+		return state.getClass().toString().replaceAll("class ", "");
 	}
 	
 	@Override

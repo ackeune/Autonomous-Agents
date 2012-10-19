@@ -1,28 +1,29 @@
-function plotAA
-close all;
-% 1 predator
-fileName = 'IQL_Preds1Alpha0.5Gamma0.9Epsilon0.1';
+function plotAA(name, preds, alpha, gamma, epsilon, episodes, runs, state, saveDir)
+
+fileName = strcat(name, '_Preds', num2str(preds),...
+    'Alpha',num2str(alpha),...
+    'Gamma',num2str(gamma),...
+    'Epsilon',num2str(epsilon),...
+    'Episodes',num2str(episodes),...
+    'Runs',num2str(runs),...
+    state);
 data = importdata(strcat(fileName, '.txt'));
-h = figure(1);
-plot(data(1,:));
-title('1 predator');
+meanLength = data(1,:);
+devLength = data(2,:);
+meanEnd = data(3,:);
+devEnd = data(4,:);
+h = figure();
+subplot(2,1,1)
+plotGP(1:length(meanLength), meanLength, devLength);
+title(strcat(name, ', predators=',num2str(preds),...
+    ', a=',num2str(alpha),...
+    ', e=',num2str(epsilon),...
+    ', ',state));
 xlabel('Episode');
 ylabel('Episode length');
-saveas(h, strcat('../AA3PDFs/', fileName), 'pdf');
-% predators>1
-% for i=2:2
-%     fileName = strcat('IQL_Preds', num2str(i), 'Alpha0.5Gamma0.9Epsilon0.1');
-%     data = importdata(strcat(fileName, '.txt'));
-%     %data = data(:, length(data)-100:end);
-%     h = figure(i);
-%     subplot(2,1,1)
-%     plot(data(1,:));
-%     title(strcat(num2str(i), ' predator'));
-%     xlabel('Episode');
-%     ylabel('Episode length');
-%     subplot(2,1,2);
-%     plot(data(2,:));
-%     xlabel('Episode');
-%     ylabel('Prey caught ratio');
-%     saveas(h, strcat('../AA3PDFs/', fileName), 'pdf');
-% end
+subplot(2,1,2);
+plotGP(1:length(meanEnd), meanEnd, devEnd);
+xlabel('Episode');
+ylabel('Prey caught ratio');
+saveName = strcat(saveDir, fileName, '.pdf');
+saveas(h, saveName, 'pdf');

@@ -14,64 +14,131 @@ public class Test
 {
 
 	public static void main(String[] args) 
-	{
-		boolean randomSimulation = false;
-		if( randomSimulation )
-		{
-			System.out.println("Ex1 - simulations with random policies");
-			int predatorAmount = 1;
-			Environment env1 = new Environment(predatorAmount);
-			int episodes = 100;
-			double tripProb = 0.2;
-			int[] episodeLengths1 = env1.randomSimulations(episodes, tripProb);
-			double mean = mean(episodeLengths1);
-			double dev = standardDeviation(episodeLengths1, mean);
-			System.out.printf("Mean:%f\nStandard deviation:%f\n", mean, dev);
-		}
+	{		
+		//ex1();
+		//ex2();
+		ex3();
 		
-		System.out.println("\nEx2 - Independent Q-learning");
+	}//end main
+	
+	public static void ex1()
+	{
+		System.out.println("Ex1 - simulations with random policies");
 		int predatorAmount = 1;
+		String stateType = "RelativeState";
+		Environment env1 = new Environment(predatorAmount, stateType);
+		int episodes = 100;
+		double tripProb = 0.2;
+		int[] episodeLengths1 = env1.randomSimulations(episodes, tripProb);
+		double mean = mean(episodeLengths1);
+		double dev = standardDeviation(episodeLengths1, mean);
+		System.out.printf("Mean:%f\nStandard deviation:%f\n", mean, dev);
+		System.out.println();
+	}//end ex1
+	
+	public static void ex2()
+	{
+		System.out.println("Ex2 - Independent Q-learning");
+		int predatorAmount = 3;
 		double initialValue = 15;
-		int episodes = 500;
+		int episodes = 1000;
 		double alpha = 0.5;
 		double gamma = 0.9;
 		double epsilon = 0.1; 
-		double tripProb = 0.2;	
-		int[] episodeLengths2 = new int[episodes];
-		int[] episodeEndings2 = new int[episodes];
+		double tripProb = 0.2;
 		int runs = 100;
-
+		String stateType = "DiagState";
+		int[][] episodeLengthsSet = new int[runs][episodes];
+		int[][] episodeEndingsSet = new int[runs][episodes];
+		
 		for(int r=0; r<runs; r++)
 		{
 			System.out.printf("Run: %d\n", r);
-			Environment env2 = new Environment(predatorAmount);
-			int[][] info = env2.independentQLearningEGreedy(initialValue, 
+			Environment env = new Environment(predatorAmount, stateType);
+			int[][] info = env.independentQLearningEGreedy(initialValue, 
 					episodes, alpha, gamma, epsilon, tripProb);
 			int[] tempEpisodeLengths = info[0];
 			int[] tempEpisodeEndings = info[1];
-			episodeLengths2 = add(episodeLengths2, tempEpisodeLengths);
-			episodeEndings2 = add(episodeEndings2, tempEpisodeEndings);
+			episodeLengthsSet[r] = tempEpisodeLengths;
+			episodeEndingsSet[r] = tempEpisodeEndings;
 		}
 		if( runs > 0 )
 		{
-			double[] averageEpisodeLengths2 = divide(episodeLengths2, runs);
-			printArray(averageEpisodeLengths2);
-			System.out.println();
-			double[] averageEpisodeEndings2 = divide(episodeEndings2, runs);
-			printArray(averageEpisodeEndings2);
-			System.out.printf("\nMean length:%f\n", mean(averageEpisodeLengths2));
-			System.out.printf("Mean endings:%f\n", mean(averageEpisodeEndings2));
-			
+			double[] averageEpisodeLengths = mean(episodeLengthsSet);
+			double[] stnDevEpisodeLengths = standardDeviation(episodeLengthsSet, averageEpisodeLengths);
+			double[] averageEpisodeEndings = mean(episodeEndingsSet);
+			double[] stnDevEpisodeEndings = standardDeviation(episodeEndingsSet, averageEpisodeEndings);
+			System.out.println(arrayToString(averageEpisodeLengths));
+			System.out.println(arrayToString(stnDevEpisodeLengths));
+			System.out.println(arrayToString(averageEpisodeEndings));
+			System.out.println(arrayToString(stnDevEpisodeEndings));
+						
 			// print to file
-			double[][] toPrint = 
-				new double[2][averageEpisodeLengths2.length];
-			toPrint[0] = averageEpisodeLengths2;
-			toPrint[1] = averageEpisodeEndings2;
-			String fileName = String.format("IQL_Preds%dAlpha%.1fGamma%.1fEpsilon%.1f.txt", 
-					predatorAmount, alpha, gamma, epsilon);
+			double[][] toPrint = new double[4][averageEpisodeLengths.length];
+			toPrint[0] = averageEpisodeLengths;
+			toPrint[1] = stnDevEpisodeLengths;
+			toPrint[2] = averageEpisodeEndings;
+			toPrint[3] = stnDevEpisodeEndings;
+			String stateSpace = new Environment(1, stateType).getStateName();
+			String fileName = String.format("IQL_Preds%dAlpha%.1fGamma%.1fEpsilon%.1fEpisodes%dRuns%d%s.txt", 
+					predatorAmount, alpha, gamma, epsilon, episodes, runs, stateSpace);
+			fileName = fileName.replaceAll(",", ".");
 			printToFile(fileName, toPrint);
 		}
-	}//end main
+		System.out.println();
+	}//end ex2
+	
+	public static void ex3()
+	{
+		System.out.println("Ex3 - Hive Mind Q-learning");
+		int predatorAmount = 2;
+		double initialValue = 15;
+		int episodes = 1000;
+		double alpha = 0.5;
+		double gamma = 0.9;
+		double epsilon = 0.1; 
+		double tripProb = 0.2;
+		int runs = 100;
+		String stateType = "DiagState";
+		int[][] episodeLengthsSet = new int[runs][episodes];
+		int[][] episodeEndingsSet = new int[runs][episodes];
+		
+		for(int r=0; r<runs; r++)
+		{
+			System.out.printf("Run: %d\n", r);
+			Environment env = new Environment(predatorAmount, stateType);
+			int[][] info = env.hiveMindQLearningEGreedy(initialValue, 
+					episodes, alpha, gamma, epsilon, tripProb);
+			int[] tempEpisodeLengths = info[0];
+			int[] tempEpisodeEndings = info[1];
+			episodeLengthsSet[r] = tempEpisodeLengths;
+			episodeEndingsSet[r] = tempEpisodeEndings;
+		}
+		if( runs > 0 )
+		{
+			double[] averageEpisodeLengths = mean(episodeLengthsSet);
+			double[] stnDevEpisodeLengths = standardDeviation(episodeLengthsSet, averageEpisodeLengths);
+			double[] averageEpisodeEndings = mean(episodeEndingsSet);
+			double[] stnDevEpisodeEndings = standardDeviation(episodeEndingsSet, averageEpisodeEndings);
+			System.out.println(arrayToString(averageEpisodeLengths));
+			System.out.println(arrayToString(stnDevEpisodeLengths));
+			System.out.println(arrayToString(averageEpisodeEndings));
+			System.out.println(arrayToString(stnDevEpisodeEndings));
+						
+			// print to file
+			double[][] toPrint = new double[4][averageEpisodeLengths.length];
+			toPrint[0] = averageEpisodeLengths;
+			toPrint[1] = stnDevEpisodeLengths;
+			toPrint[2] = averageEpisodeEndings;
+			toPrint[3] = stnDevEpisodeEndings;
+			String stateSpace = new Environment(1, stateType).getStateName();
+			String fileName = String.format("HMQL_Preds%dAlpha%.1fGamma%.1fEpsilon%.1fEpisodes%dRuns%d%s.txt", 
+					predatorAmount, alpha, gamma, epsilon, episodes, runs, stateSpace);
+			fileName = fileName.replaceAll(",", ".");
+			printToFile(fileName, toPrint);
+		}
+		System.out.println();
+	}//end ex3
 	
 	/**
 	 * Calculate the mean of a set of times.
@@ -93,6 +160,27 @@ public class Test
 		return sum / timeList.length;
 	}
 	
+	public static double[] mean(int[][] episodes)
+	{
+		int sum[] = new int[episodes[0].length];
+		for(int i=0; i<episodes.length; i++)
+			sum = add(sum, episodes[i]);
+		return divide(sum, episodes.length); // divide by runs
+	}
+	
+	public static double[] standardDeviation(int[][] episodes, double[] mean)
+	{
+		double[] sqrdDif = new double[episodes[0].length];
+		for(int i=0; i<episodes.length; i++)
+		{
+			double[] dif = subtract(episodes[i], mean);
+			double[] tempSqrdDif = pow(dif, 2);
+			sqrdDif = add(sqrdDif, tempSqrdDif);
+		}
+		double[] div = divide(sqrdDif, episodes.length);
+		return sqrt(div);
+	}
+	
 	/**
 	 * Calculate the standard deviation of a set of times.
 	 * @param timeList	a list of episode lengths
@@ -109,6 +197,22 @@ public class Test
 		return Math.sqrt(dev / timeList.length);
 	}
 	
+	public static double[] sqrt(double[] a)
+	{
+		double[] b = new double[a.length];
+		for(int i=0; i<a.length; i++)
+			b[i] = Math.sqrt(a[i]);
+		return b;
+	}
+	
+	public static double[] pow(double[] a, double pow)
+	{
+		double[] b = new double[a.length];
+		for(int i=0; i<a.length; i++)
+			b[i] = Math.pow(a[i], pow);
+		return b;
+	}
+	
 	/**
 	 * Return the sum of the values in array 'a' and 'b'.
 	 * @param a array
@@ -122,6 +226,21 @@ public class Test
 			c[i] = a[i]+b[i];
 		return c;
 	}
+	public static double[] add(double[] a, double[] b)
+	{
+		double[] c = new double[a.length];
+		for(int i=0; i<a.length; i++)
+			c[i] = a[i]+b[i];
+		return c;
+	}
+	
+	public static double[] subtract(int[] a, double[] b)
+	{
+		double[] c = new double[a.length];
+		for(int i=0; i<a.length; i++)
+			c[i] = a[i]-b[i];
+		return c;
+	}
 	
 	/**
 	 * Return the values in array 'a' divided by 'd'.
@@ -130,6 +249,13 @@ public class Test
 	 * @return a/d
 	 */
 	public static double[] divide(int[] a, double d)
+	{
+		double[] b = new double[a.length];
+		for(int i=0; i<a.length; i++)
+			b[i] = ((double)a[i])/d;
+		return b;
+	}
+	public static double[] divide(double[] a, double d)
 	{
 		double[] b = new double[a.length];
 		for(int i=0; i<a.length; i++)
