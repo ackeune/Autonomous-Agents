@@ -15,7 +15,7 @@ public class Test
 
 	public static void main(String[] args) 
 	{
-		boolean randomSimulation = true;
+		boolean randomSimulation = false;
 		if( randomSimulation )
 		{
 			System.out.println("Ex1 - simulations with random policies");
@@ -36,10 +36,10 @@ public class Test
 		double alpha = 0.5;
 		double gamma = 0.9;
 		double epsilon = 0.1; 
-		double tripProb = 0.2;	
+		double tripProb = 1.0;	
 		int[] episodeLengths2 = new int[episodes];
 		int[] episodeEndings2 = new int[episodes];
-		int runs = 1;
+		int runs = 10;
 		for(int r=0; r<runs; r++)
 		{
 			System.out.printf("Run: %d\n", r);

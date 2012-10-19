@@ -17,7 +17,7 @@ public class Environment
 	// constructors
 	public Environment(int predatorAmount)
 	{
-		this.state = new RelativeState(predatorAmount);	// choose state representation
+		this.state = new DiagState(predatorAmount);	// choose state representation
 		if( predatorAmount > 4 )
 		{
 			System.out.println("PredatorAmount cannot be larger than 4. PredatorAmount is has been set to 4.");

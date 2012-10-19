@@ -21,7 +21,7 @@ import java.util.Set;
 
 public class RelativeState implements State
 {
-	private Point stateSize;
+	public Point stateSize;
 	private Point[] relativeDistances;
 
 	// constructors
