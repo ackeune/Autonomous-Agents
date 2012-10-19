@@ -32,14 +32,15 @@ public class Test
 		System.out.println("\nEx2 - Independent Q-learning");
 		int predatorAmount = 1;
 		double initialValue = 15;
-		int episodes = 200;
+		int episodes = 500;
 		double alpha = 0.5;
 		double gamma = 0.9;
 		double epsilon = 0.1; 
-		double tripProb = 1.0;	
+		double tripProb = 0.2;	
 		int[] episodeLengths2 = new int[episodes];
 		int[] episodeEndings2 = new int[episodes];
-		int runs = 10;
+		int runs = 100;
+
 		for(int r=0; r<runs; r++)
 		{
 			System.out.printf("Run: %d\n", r);

@@ -14,21 +14,21 @@ public class DiagState implements State
 	public DiagState(int predatorAmount)
 	{
 		this.stateSize = new Point(11,11);
-		if( predatorAmount > 4 )
-		{
-			System.out.println("PredatorAmount cannot be larger than 4. PredatorAmount is has been set to 4.");
-			predatorAmount = 4;
-		}
 		this.relativeDistances = new Point[predatorAmount];
 		this.areas = new String[predatorAmount];
-		Point[] possiblePoints = {new Point(-5,-5), new Point(5,5), 
-				new Point(5,-5), new Point(-5,5)};	// array of possible initial predator relative distances
-		String[] possibleAreas = {"NW", "SE", "SW", "NE"}; // the corresponding areas
-		for(int i=0; i<predatorAmount; i++)
-		{
-			this.relativeDistances[i] = possiblePoints[i];
-			this.areas[i] = possibleAreas[i];
-		}
+		initializeState(getPredatorAmount());
+	}
+	public DiagState(DiagState state)
+	{
+		this(state.stateSize, state.relativeDistances, state.areas);
+	}
+	public DiagState(Point stateSize, Point[] relativeDistances, String[] areas)
+	{
+		this.stateSize = new Point(stateSize);
+		this.relativeDistances = new Point[relativeDistances.length];
+		System.arraycopy(relativeDistances, 0, this.relativeDistances, 0, relativeDistances.length);
+		this.areas = new String[areas.length];
+		System.arraycopy(areas, 0, this.areas, 0, areas.length);
 	}//end constructor
 	
 	/**
@@ -101,7 +101,7 @@ public class DiagState implements State
 	
 	public String relDistToArea(Point pos)
 	{
-		if( pos.x==pos.y )	// on diagonal
+		if( Math.abs(pos.x)==Math.abs(pos.y) )	// on diagonal
 		{
 			if( pos.x<0 && pos.y<0 )
 				return "NW";
@@ -206,7 +206,7 @@ public class DiagState implements State
 	 */
 	public State clone()
 	{
-		return new DiagState(getPredatorAmount());
+		return new DiagState(this);
 	}
 
 	@Override
@@ -237,6 +237,32 @@ public class DiagState implements State
 	public int hashCode()
 	{
 		return stateSize.hashCode() + Arrays.deepHashCode(areas);
+	}
+	
+	private void initializeState(int predatorAmount)
+	{
+		this.stateSize = new Point(11,11);
+		if( predatorAmount > 4 )
+		{
+			System.out.println("PredatorAmount cannot be larger than 4. PredatorAmount is has been set to 4.");
+			predatorAmount = 4;
+		}
+		this.relativeDistances = new Point[predatorAmount];
+		this.areas = new String[predatorAmount];
+		Point[] possiblePoints = {new Point(-5,-5), new Point(5,5), 
+				new Point(5,-5), new Point(-5,5)};	// array of possible initial predator relative distances
+		String[] possibleAreas = {"NW", "SE", "SW", "NE"}; // the corresponding areas
+		for(int i=0; i<predatorAmount; i++)
+		{
+			this.relativeDistances[i] = possiblePoints[i];
+			this.areas[i] = possibleAreas[i];
+		}
+	}
+
+	@Override
+	public void reset() 
+	{
+		initializeState(getPredatorAmount());
 	}
 
 }

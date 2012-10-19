@@ -115,6 +115,7 @@ public class Environment
 			episodeLengths[e] = counter;
 			episodeEndings[e] = state.confusion()?0:1; // 0 if confusion, 1 if prey caught
 		}//end episodes		
+		System.out.println(predators[0].qValues.size());
 		int[][] info = new int[2][episodeLengths.length];
 		info[0] = episodeLengths;
 		info[1] = episodeEndings;
@@ -127,6 +128,7 @@ public class Environment
 	public void resetEpisode()
 	{
 		state = state.clone();
+		state.reset();
 	}
 	
 	@Override
