@@ -128,7 +128,7 @@ public class Environment
 	public int[][] hiveMindQLearningEGreedy(double initialValue, int episodes, double alpha, double gamma, double epsilon, double tripProb)
 	{	
 		Random generator = new Random();
-		HiveMind hiveMind = new HiveMind(state.getPredatorAmount());
+		HiveMind hiveMind = new HiveMind(1, state.getPredatorAmount());
 		
 		int[] episodeLengths = new int[episodes];
 		int[] episodeEndings = new int[episodes];

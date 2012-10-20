@@ -91,7 +91,7 @@ public class Test
 	public static void ex3()
 	{
 		System.out.println("Ex3 - Hive Mind Q-learning");
-		int predatorAmount = 2;
+		int predatorAmount = 3;
 		double initialValue = 15;
 		int episodes = 1000;
 		double alpha = 0.5;
