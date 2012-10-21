@@ -2,6 +2,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 
@@ -16,8 +17,8 @@ public class Test
 	public static void main(String[] args) 
 	{		
 		//ex1();
-		//ex2();
-		ex3();
+		ex2(false);
+		//ex3(false);
 		
 	}//end main
 	
@@ -36,24 +37,24 @@ public class Test
 		System.out.println();
 	}//end ex1
 	
-	public static void ex2()
+	public static void ex2(boolean print)
 	{
 		System.out.println("Ex2 - Independent Q-learning");
 		int predatorAmount = 3;
 		double initialValue = 15;
-		int episodes = 1000;
+		int episodes = 50000;
 		double alpha = 0.5;
 		double gamma = 0.9;
 		double epsilon = 0.1; 
 		double tripProb = 0.2;
-		int runs = 100;
+		int runs = 10;
 		String stateType = "DiagState";
 		int[][] episodeLengthsSet = new int[runs][episodes];
 		int[][] episodeEndingsSet = new int[runs][episodes];
 		
 		for(int r=0; r<runs; r++)
 		{
-			System.out.printf("Run: %d\n", r);
+			System.out.printf("Run: %d\t%s\n", r, new Date());
 			Environment env = new Environment(predatorAmount, stateType);
 			int[][] info = env.independentQLearningEGreedy(initialValue, 
 					episodes, alpha, gamma, epsilon, tripProb);
@@ -68,11 +69,14 @@ public class Test
 			double[] stnDevEpisodeLengths = standardDeviation(episodeLengthsSet, averageEpisodeLengths);
 			double[] averageEpisodeEndings = mean(episodeEndingsSet);
 			double[] stnDevEpisodeEndings = standardDeviation(episodeEndingsSet, averageEpisodeEndings);
-			System.out.println(arrayToString(averageEpisodeLengths));
-			System.out.println(arrayToString(stnDevEpisodeLengths));
-			System.out.println(arrayToString(averageEpisodeEndings));
-			System.out.println(arrayToString(stnDevEpisodeEndings));
-						
+			if( print )
+			{
+				System.out.println(arrayToString(averageEpisodeLengths));
+				System.out.println(arrayToString(stnDevEpisodeLengths));
+				System.out.println(arrayToString(averageEpisodeEndings));
+				System.out.println(arrayToString(stnDevEpisodeEndings));
+			}
+									
 			// print to file
 			double[][] toPrint = new double[4][averageEpisodeLengths.length];
 			toPrint[0] = averageEpisodeLengths;
@@ -88,24 +92,24 @@ public class Test
 		System.out.println();
 	}//end ex2
 	
-	public static void ex3()
+	public static void ex3(boolean print)
 	{
 		System.out.println("Ex3 - Hive Mind Q-learning");
-		int predatorAmount = 3;
+		int predatorAmount = 2;
 		double initialValue = 15;
-		int episodes = 1000;
+		int episodes = 10000;
 		double alpha = 0.5;
 		double gamma = 0.9;
 		double epsilon = 0.1; 
 		double tripProb = 0.2;
-		int runs = 100;
+		int runs = 10;
 		String stateType = "DiagState";
 		int[][] episodeLengthsSet = new int[runs][episodes];
 		int[][] episodeEndingsSet = new int[runs][episodes];
 		
 		for(int r=0; r<runs; r++)
 		{
-			System.out.printf("Run: %d\n", r);
+			System.out.printf("Run: %d\t%s\n", r, new Date());
 			Environment env = new Environment(predatorAmount, stateType);
 			int[][] info = env.hiveMindQLearningEGreedy(initialValue, 
 					episodes, alpha, gamma, epsilon, tripProb);
@@ -120,10 +124,13 @@ public class Test
 			double[] stnDevEpisodeLengths = standardDeviation(episodeLengthsSet, averageEpisodeLengths);
 			double[] averageEpisodeEndings = mean(episodeEndingsSet);
 			double[] stnDevEpisodeEndings = standardDeviation(episodeEndingsSet, averageEpisodeEndings);
-			System.out.println(arrayToString(averageEpisodeLengths));
-			System.out.println(arrayToString(stnDevEpisodeLengths));
-			System.out.println(arrayToString(averageEpisodeEndings));
-			System.out.println(arrayToString(stnDevEpisodeEndings));
+			if( print )
+			{
+				System.out.println(arrayToString(averageEpisodeLengths));
+				System.out.println(arrayToString(stnDevEpisodeLengths));
+				System.out.println(arrayToString(averageEpisodeEndings));
+				System.out.println(arrayToString(stnDevEpisodeEndings));
+			}
 						
 			// print to file
 			double[][] toPrint = new double[4][averageEpisodeLengths.length];
